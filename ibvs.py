@@ -17,12 +17,14 @@ class ImageBasedVSSimulator(VisualServoingSimulator):
     Extends base simulator to work with Harris corners.
     """
 
-    def __init__(self,
-                 image_scene,
-                 initial_camera,
-                 desired_camera,
-                 controller_params=None,
-                 simulation_params=None):
+    def __init__(
+        self,
+        image_scene,
+        initial_camera,
+        desired_camera,
+        controller_params=None,
+        simulation_params=None,
+    ):
         """
         Initialize image-based visual servoing simulator.
 
@@ -41,19 +43,13 @@ class ImageBasedVSSimulator(VisualServoingSimulator):
 
         # Call parent constructor
         super().__init__(
-            scene,
-            initial_camera,
-            desired_camera,
-            controller_params,
-            simulation_params
+            scene, initial_camera, desired_camera, controller_params, simulation_params
         )
 
 
-def create_image_based_simulator(image_path=None,
-                                 image_array=None,
-                                 max_features=20,
-                                 gain=0.5,
-                                 displacement='small'):
+def create_image_based_simulator(
+    image_path=None, image_array=None, max_features=20, gain=0.5, displacement="small"
+):
     """
     Factory function to create image-based simulator.
 
@@ -73,17 +69,17 @@ def create_image_based_simulator(image_path=None,
         image_array=image_array,
         max_features=max_features,
         plane_depth=0.0,
-        plane_size=1.0
+        plane_size=1.0,
     )
 
     # Create cameras based on displacement
-    if displacement == 'small':
+    if displacement == "small":
         initial_pos = [0.15, 0.10, -1.5]
         desired_pos = [0, 0, -1.8]
-    elif displacement == 'medium':
+    elif displacement == "medium":
         initial_pos = [0.3, 0.25, -1.3]
         desired_pos = [0, 0, -1.8]
-    elif displacement == 'large':
+    elif displacement == "large":
         initial_pos = [0.5, 0.4, -1.2]
         desired_pos = [0, 0, -2.0]
     else:
@@ -95,7 +91,7 @@ def create_image_based_simulator(image_path=None,
         image_width=640,
         image_height=480,
         position=initial_pos,
-        orientation=np.eye(3)
+        orientation=np.eye(3),
     )
 
     desired_camera = Camera(
@@ -103,7 +99,7 @@ def create_image_based_simulator(image_path=None,
         image_width=640,
         image_height=480,
         position=desired_pos,
-        orientation=np.eye(3)
+        orientation=np.eye(3),
     )
 
     # Orient cameras to look at scene
@@ -113,18 +109,18 @@ def create_image_based_simulator(image_path=None,
 
     # Controller parameters
     controller_params = {
-        'gain': gain,
-        'control_law': 'classic',
-        'depth_estimation': 'desired',
-        'velocity_limits': {'linear': 0.5, 'angular': 0.5}
+        "gain": gain,
+        "control_law": "classic",
+        "depth_estimation": "desired",
+        "velocity_limits": {"linear": 0.5, "angular": 0.5},
     }
 
     simulation_params = {
-        'dt': 0.01,
-        'max_iterations': 1500,
-        'convergence_threshold': 1e-3,
-        'check_visibility': True,
-        'stop_if_features_lost': True
+        "dt": 0.01,
+        "max_iterations": 1500,
+        "convergence_threshold": 1e-3,
+        "check_visibility": True,
+        "stop_if_features_lost": True,
     }
 
     return ImageBasedVSSimulator(
@@ -132,7 +128,7 @@ def create_image_based_simulator(image_path=None,
         initial_camera,
         desired_camera,
         controller_params,
-        simulation_params
+        simulation_params,
     )
 
 
@@ -147,10 +143,7 @@ if __name__ == "__main__":
     checkerboard = create_checkerboard_pattern(square_size=64, n_squares=8)
 
     sim_checker = create_image_based_simulator(
-        image_array=checkerboard,
-        max_features=16,
-        gain=0.5,
-        displacement='small'
+        image_array=checkerboard, max_features=16, gain=0.5, displacement="small"
     )
 
     print(f"   Features detected: {len(sim_checker.scene.points_3d)}")
@@ -168,10 +161,7 @@ if __name__ == "__main__":
     star = create_star_pattern(size=512)
 
     sim_star = create_image_based_simulator(
-        image_array=star,
-        max_features=10,
-        gain=0.6,
-        displacement='medium'
+        image_array=star, max_features=10, gain=0.6, displacement="medium"
     )
 
     sim_star.image_scene.visualize()
@@ -180,4 +170,4 @@ if __name__ == "__main__":
     live_vis = LiveVisualizer(sim_star)
     results_star = live_vis.run_with_visualization(verbose=True)
 
-    live_vis.save_all(prefix='image_based_star')
+    live_vis.save_all(prefix="image_based_star")

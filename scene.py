@@ -7,7 +7,7 @@ class VirtualScene:
     Manages 3D points and scene configuration for visual servoing simulation.
     """
 
-    def __init__(self, points_3d=None, scene_type='planar', **scene_kwargs):
+    def __init__(self, points_3d=None, scene_type="planar", **scene_kwargs):
         """
         Initialize virtual scene.
 
@@ -26,7 +26,7 @@ class VirtualScene:
 
         self.n_points = len(self.points_3d)
 
-    def generate_scene(self, scene_type='planar', **kwargs):
+    def generate_scene(self, scene_type="planar", **kwargs):
         """
         Generate 3D points for different scene types.
 
@@ -37,15 +37,15 @@ class VirtualScene:
         Returns:
             Nx3 array of 3D points
         """
-        if scene_type == 'planar':
+        if scene_type == "planar":
             return self.generate_planar_points(**kwargs)
-        elif scene_type == 'cube':
+        elif scene_type == "cube":
             return self.generate_cube_points(**kwargs)
-        elif scene_type == 'sphere':
+        elif scene_type == "sphere":
             return self.generate_sphere_points(**kwargs)
-        elif scene_type == 'random':
+        elif scene_type == "random":
             return self.generate_random_points(**kwargs)
-        elif scene_type == 'grid':
+        elif scene_type == "grid":
             return self.generate_grid_points(**kwargs)
         else:
             raise ValueError(f"Unknown scene type: {scene_type}")
@@ -65,12 +65,14 @@ class VirtualScene:
         if n_points == 4:
             # Four corners of a square
             half_size = size / 2
-            points = np.array([
-                [half_size, half_size, z_plane],
-                [-half_size, half_size, z_plane],
-                [-half_size, -half_size, z_plane],
-                [half_size, -half_size, z_plane]
-            ])
+            points = np.array(
+                [
+                    [half_size, half_size, z_plane],
+                    [-half_size, half_size, z_plane],
+                    [-half_size, -half_size, z_plane],
+                    [half_size, -half_size, z_plane],
+                ]
+            )
         else:
             # Random points on plane
             xy = np.random.uniform(-size / 2, size / 2, (n_points, 2))
@@ -98,16 +100,21 @@ class VirtualScene:
         half_size = size / 2
 
         # 8 corners of a cube
-        corners = np.array([
-            [1, 1, 1],
-            [-1, 1, 1],
-            [-1, -1, 1],
-            [1, -1, 1],
-            [1, 1, -1],
-            [-1, 1, -1],
-            [-1, -1, -1],
-            [1, -1, -1]
-        ]) * half_size
+        corners = (
+            np.array(
+                [
+                    [1, 1, 1],
+                    [-1, 1, 1],
+                    [-1, -1, 1],
+                    [1, -1, 1],
+                    [1, 1, -1],
+                    [-1, 1, -1],
+                    [-1, -1, -1],
+                    [1, -1, -1],
+                ]
+            )
+            * half_size
+        )
 
         points = corners + center
 
@@ -134,7 +141,7 @@ class VirtualScene:
         indices = np.arange(0, n_points, dtype=float) + 0.5
 
         phi = np.arccos(1 - 2 * indices / n_points)
-        theta = np.pi * (1 + 5 ** 0.5) * indices
+        theta = np.pi * (1 + 5**0.5) * indices
 
         x = radius * np.cos(theta) * np.sin(phi)
         y = radius * np.sin(theta) * np.sin(phi)
@@ -163,11 +170,9 @@ class VirtualScene:
 
         xv, yv = np.meshgrid(x, y)
 
-        points = np.column_stack([
-            xv.flatten(),
-            yv.flatten(),
-            np.full(rows * cols, z_plane)
-        ])
+        points = np.column_stack(
+            [xv.flatten(), yv.flatten(), np.full(rows * cols, z_plane)]
+        )
 
         return points
 
@@ -183,11 +188,11 @@ class VirtualScene:
             Nx3 array of random points
         """
         if bounds is None:
-            bounds = {'x': [-1, 1], 'y': [-1, 1], 'z': [-0.5, 0.5]}
+            bounds = {"x": [-1, 1], "y": [-1, 1], "z": [-0.5, 0.5]}
 
-        x = np.random.uniform(bounds['x'][0], bounds['x'][1], n_points)
-        y = np.random.uniform(bounds['y'][0], bounds['y'][1], n_points)
-        z = np.random.uniform(bounds['z'][0], bounds['z'][1], n_points)
+        x = np.random.uniform(bounds["x"][0], bounds["x"][1], n_points)
+        y = np.random.uniform(bounds["y"][0], bounds["y"][1], n_points)
+        z = np.random.uniform(bounds["z"][0], bounds["z"][1], n_points)
 
         points = np.column_stack([x, y, z])
 
@@ -223,7 +228,7 @@ class VirtualScene:
             center = np.array(center)
 
         # Translate to origin, rotate, translate back
-        self.points_3d = ((rotation_matrix @ (self.points_3d - center).T).T + center)
+        self.points_3d = (rotation_matrix @ (self.points_3d - center).T).T + center
 
     def translate_points(self, translation):
         """
@@ -269,8 +274,8 @@ class VirtualScene:
             Dictionary with 'min' and 'max' coordinates
         """
         return {
-            'min': np.min(self.points_3d, axis=0),
-            'max': np.max(self.points_3d, axis=0)
+            "min": np.min(self.points_3d, axis=0),
+            "max": np.max(self.points_3d, axis=0),
         }
 
     def add_noise(self, noise_std=0.01):
@@ -296,7 +301,7 @@ class VirtualScene:
             Otherwise: image_points
         """
         image_points, depths, valid_mask = camera.project_to_image(
-            self.points_3d, frame='world'
+            self.points_3d, frame="world"
         )
 
         if return_depths:
@@ -317,7 +322,7 @@ class VirtualScene:
             Otherwise: normalized_points
         """
         normalized_points, depths, valid_mask = camera.project_to_normalized_plane(
-            self.points_3d, frame='world'
+            self.points_3d, frame="world"
         )
 
         if return_depths:
@@ -337,7 +342,7 @@ class VirtualScene:
             Boolean array indicating visible points
         """
         image_points, depths, valid_depth = camera.project_to_image(
-            self.points_3d, frame='world'
+            self.points_3d, frame="world"
         )
 
         in_fov = camera.is_in_field_of_view(image_points, margin=margin)
@@ -370,7 +375,7 @@ class SceneConfiguration:
     """
 
     @staticmethod
-    def create_standard_setup(scene_type='planar'):
+    def create_standard_setup(scene_type="planar"):
         """
         Create a standard visual servoing setup.
 
@@ -378,10 +383,10 @@ class SceneConfiguration:
             tuple: (scene, initial_camera, desired_camera)
         """
         # Create scene
-        if scene_type == 'planar':
-            scene = VirtualScene(scene_type='planar', size=0.6, z_plane=0.0)
-        elif scene_type == 'cube':
-            scene = VirtualScene(scene_type='cube', size=0.8, center=[0, 0, 0])
+        if scene_type == "planar":
+            scene = VirtualScene(scene_type="planar", size=0.6, z_plane=0.0)
+        elif scene_type == "cube":
+            scene = VirtualScene(scene_type="cube", size=0.8, center=[0, 0, 0])
         else:
             scene = VirtualScene(scene_type=scene_type)
 
@@ -391,7 +396,7 @@ class SceneConfiguration:
             image_width=640,
             image_height=480,
             position=[0.5, 0.3, -1.5],
-            orientation=np.eye(3)
+            orientation=np.eye(3),
         )
 
         desired_camera = Camera(
@@ -399,7 +404,7 @@ class SceneConfiguration:
             image_width=640,
             image_height=480,
             position=[0, 0, -2.0],
-            orientation=np.eye(3)
+            orientation=np.eye(3),
         )
 
         # Make cameras look at scene centroid
@@ -417,14 +422,14 @@ class SceneConfiguration:
         Returns:
             tuple: (scene, initial_camera, desired_camera)
         """
-        scene = VirtualScene(scene_type='planar', size=0.8, z_plane=0.0)
+        scene = VirtualScene(scene_type="planar", size=0.8, z_plane=0.0)
 
         initial_camera = Camera(
             focal_length=800,
             image_width=640,
             image_height=480,
             position=[0.8, 0.5, -1.2],
-            orientation=np.eye(3)
+            orientation=np.eye(3),
         )
 
         desired_camera = Camera(
@@ -432,7 +437,7 @@ class SceneConfiguration:
             image_width=640,
             image_height=480,
             position=[0, 0, -2.0],
-            orientation=np.eye(3)
+            orientation=np.eye(3),
         )
 
         centroid = scene.get_centroid()
@@ -449,7 +454,7 @@ class SceneConfiguration:
         Returns:
             tuple: (scene, initial_camera, desired_camera)
         """
-        scene = VirtualScene(scene_type='planar', size=0.8, z_plane=0.0)
+        scene = VirtualScene(scene_type="planar", size=0.8, z_plane=0.0)
 
         # Both cameras at same position, different orientations
         position = [0, 0, -2.0]
@@ -459,7 +464,7 @@ class SceneConfiguration:
             image_width=640,
             image_height=480,
             position=position,
-            orientation=np.eye(3)
+            orientation=np.eye(3),
         )
 
         desired_camera = Camera(
@@ -467,74 +472,16 @@ class SceneConfiguration:
             image_width=640,
             image_height=480,
             position=position,
-            orientation=np.eye(3)
+            orientation=np.eye(3),
         )
 
         # Rotate initial camera
         from scipy.spatial.transform import Rotation as R
-        rotation = R.from_euler('xyz', [15, 20, 10], degrees=True).as_matrix()
+
+        rotation = R.from_euler("xyz", [15, 20, 10], degrees=True).as_matrix()
         initial_camera.rotation = rotation @ initial_camera.rotation
 
         centroid = scene.get_centroid()
         desired_camera.look_at(centroid)
 
         return scene, initial_camera, desired_camera
-
-
-# Testing
-if __name__ == "__main__":
-    print("=== Testing VirtualScene ===\n")
-
-    # Test different scene types
-    print("1. Planar scene:")
-    scene_planar = VirtualScene(scene_type='planar', size=1.0)
-    print(f"Points:\n{scene_planar.points_3d}\n")
-
-    print("2. Cube scene:")
-    scene_cube = VirtualScene(scene_type='cube', size=1.0)
-    print(f"Number of points: {scene_cube.n_points}")
-    print(f"Centroid: {scene_cube.get_centroid()}\n")
-
-    print("3. Grid scene:")
-    scene_grid = VirtualScene(scene_type='grid', grid_size=(4, 4), spacing=0.3)
-    print(f"Number of points: {scene_grid.n_points}\n")
-
-    print("4. Sphere scene:")
-    scene_sphere = VirtualScene(scene_type='sphere', n_points=15, radius=1.0)
-    print(f"Number of points: {scene_sphere.n_points}\n")
-
-    # Test transformations
-    print("5. Testing transformations:")
-    scene = VirtualScene(scene_type='planar', size=1.0)
-    print(f"Original centroid: {scene.get_centroid()}")
-
-    scene.translate_points([1, 2, 3])
-    print(f"After translation [1,2,3]: {scene.get_centroid()}")
-
-    scene.scale_points(0.5, center=scene.get_centroid())
-    print(f"After scaling by 0.5: {scene.get_centroid()}\n")
-
-    # Test projection
-    print("6. Testing projection:")
-    scene = VirtualScene(scene_type='planar', size=0.8, z_plane=0.0)
-    camera = Camera(position=[0, 0, -2], orientation=np.eye(3))
-
-    img_points, depths, valid = scene.project_to_camera(camera)
-    print(f"Image points shape: {img_points.shape}")
-    print(f"Valid points: {np.sum(valid)}/{len(valid)}")
-    print(f"Image points:\n{img_points[valid]}\n")
-
-    # Test standard setup
-    print("7. Testing standard configuration:")
-    scene, cam_init, cam_desired = SceneConfiguration.create_standard_setup('planar')
-
-    print(f"Scene type: {scene.scene_type}")
-    print(f"Initial camera position: {cam_init.position}")
-    print(f"Desired camera position: {cam_desired.position}")
-
-    # Check visibility
-    visible = scene.are_points_visible(cam_init)
-    print(f"Visible in initial view: {np.sum(visible)}/{scene.n_points}")
-
-    visible = scene.are_points_visible(cam_desired)
-    print(f"Visible in desired view: {np.sum(visible)}/{scene.n_points}")

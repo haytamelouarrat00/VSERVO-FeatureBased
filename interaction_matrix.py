@@ -7,7 +7,7 @@ class InteractionMatrix:
     Relates the time derivative of image features to camera velocity.
     """
 
-    def __init__(self, feature_type='point'):
+    def __init__(self, feature_type="point"):
         """
         Initialize interaction matrix computer.
 
@@ -35,10 +35,12 @@ class InteractionMatrix:
         if Z <= 0:
             raise ValueError(f"Depth Z must be positive, got {Z}")
 
-        L = np.array([
-            [-1 / Z, 0, x / Z, x * y, -(1 + x ** 2), y],
-            [0, -1 / Z, y / Z, (1 + y ** 2), -x * y, -x]
-        ])
+        L = np.array(
+            [
+                [-1 / Z, 0, x / Z, x * y, -(1 + x**2), y],
+                [0, -1 / Z, y / Z, (1 + y**2), -x * y, -x],
+            ]
+        )
 
         return L
 
@@ -92,10 +94,10 @@ class InteractionMatrix:
             Z = depths[i]
 
             if Z > 0:
-                L[2 * i:2 * i + 2, :] = self.compute_for_point(x, y, Z)
+                L[2 * i : 2 * i + 2, :] = self.compute_for_point(x, y, Z)
             else:
                 # Handle invalid depth - use large depth as approximation
-                L[2 * i:2 * i + 2, :] = self.compute_for_point(x, y, 10.0)
+                L[2 * i : 2 * i + 2, :] = self.compute_for_point(x, y, 10.0)
 
         return L
 
@@ -116,7 +118,7 @@ class InteractionMatrix:
 
         return self.compute_for_points(normalized_points, depths)
 
-    def compute_pseudoinverse(self, L, method='svd', damping=0.0):
+    def compute_pseudoinverse(self, L, method="svd", damping=0.0):
         """
         Compute pseudo-inverse of interaction matrix.
 
@@ -128,11 +130,11 @@ class InteractionMatrix:
         Returns:
             Pseudo-inverse of L
         """
-        if method == 'svd':
+        if method == "svd":
             # Standard pseudo-inverse using SVD
             L_pinv = np.linalg.pinv(L)
 
-        elif method == 'damped':
+        elif method == "damped":
             # Damped least squares: L+ = L^T (LL^T + λ²I)^-1
             n = L.shape[0]
             L_pinv = L.T @ np.linalg.inv(L @ L.T + damping * np.eye(n))
@@ -142,8 +144,9 @@ class InteractionMatrix:
 
         return L_pinv
 
-    def estimate_depth_from_desired(self, current_points, desired_points,
-                                    desired_depths, method='mean'):
+    def estimate_depth_from_desired(
+        self, current_points, desired_points, desired_depths, method="mean"
+    ):
         """
         Estimate current depth from desired depths (common approximation in IBVS).
 
@@ -156,34 +159,37 @@ class InteractionMatrix:
         Returns:
             N array of estimated depths
         """
-        if method == 'desired':
+        if method == "desired":
             # Use desired depth (standard approximation)
             return desired_depths.copy()
 
-        elif method == 'mean':
+        elif method == "mean":
             # Use mean of desired depths
             mean_depth = np.mean(desired_depths)
             return np.full_like(desired_depths, mean_depth)
 
-        elif method == 'adaptive':
+        elif method == "adaptive":
             # Scale desired depth based on feature displacement
             # Rough approximation: closer features move faster
             norms_current = np.linalg.norm(current_points, axis=1)
             norms_desired = np.linalg.norm(desired_points, axis=1)
 
             # Avoid division by zero
-            scale = np.where(norms_current > 1e-6,
-                             norms_desired / norms_current,
-                             1.0)
+            scale = np.where(norms_current > 1e-6, norms_desired / norms_current, 1.0)
 
             return desired_depths * scale
 
         else:
             raise ValueError(f"Unknown method: {method}")
 
-    def compute_with_depth_estimation(self, current_points, current_depths,
-                                      desired_points, desired_depths,
-                                      depth_estimation='desired'):
+    def compute_with_depth_estimation(
+        self,
+        current_points,
+        current_depths,
+        desired_points,
+        desired_depths,
+        depth_estimation="desired",
+    ):
         """
         Compute interaction matrix with depth estimation strategy.
 
@@ -197,7 +203,7 @@ class InteractionMatrix:
         Returns:
             (2N)x6 interaction matrix
         """
-        if depth_estimation == 'current':
+        if depth_estimation == "current":
             depths_to_use = current_depths
         else:
             depths_to_use = self.estimate_depth_from_desired(
@@ -284,13 +290,13 @@ class InteractionMatrixAnalyzer:
         self.smallest_sv_history.append(smallest_sv)
 
         analysis = {
-            'condition_number': condition,
-            'rank': rank,
-            'singular_values': s,
-            'smallest_sv': smallest_sv,
-            'largest_sv': s[0],
-            'is_full_rank': rank == min(L.shape),
-            'is_well_conditioned': condition < 100
+            "condition_number": condition,
+            "rank": rank,
+            "singular_values": s,
+            "smallest_sv": smallest_sv,
+            "largest_sv": s[0],
+            "is_full_rank": rank == min(L.shape),
+            "is_well_conditioned": condition < 100,
         }
 
         return analysis
@@ -312,80 +318,21 @@ class InteractionMatrixAnalyzer:
         iterations = range(len(self.condition_history))
 
         axes[0].plot(iterations, self.condition_history)
-        axes[0].set_ylabel('Condition Number')
-        axes[0].set_yscale('log')
+        axes[0].set_ylabel("Condition Number")
+        axes[0].set_yscale("log")
         axes[0].grid(True)
-        axes[0].set_title('Interaction Matrix Analysis')
+        axes[0].set_title("Interaction Matrix Analysis")
 
         axes[1].plot(iterations, self.rank_history)
-        axes[1].set_ylabel('Rank')
+        axes[1].set_ylabel("Rank")
         axes[1].grid(True)
 
         axes[2].plot(iterations, self.smallest_sv_history)
-        axes[2].set_ylabel('Smallest Singular Value')
-        axes[2].set_xlabel('Iteration')
-        axes[2].set_yscale('log')
+        axes[2].set_ylabel("Smallest Singular Value")
+        axes[2].set_xlabel("Iteration")
+        axes[2].set_yscale("log")
         axes[2].grid(True)
 
         plt.tight_layout()
 
         return axes
-
-
-# Testing and examples
-if __name__ == "__main__":
-    print("=== Testing InteractionMatrix ===\n")
-
-    # Create interaction matrix computer
-    L_computer = InteractionMatrix()
-
-    # Test single point
-    print("1. Single point interaction matrix:")
-    x, y, Z = 0.1, -0.2, 2.0
-    L_single = L_computer.compute_for_point(x, y, Z)
-    print(f"Point: x={x}, y={y}, Z={Z}")
-    print(f"L =\n{L_single}\n")
-
-    # Test multiple points
-    print("2. Multiple points interaction matrix:")
-    points = np.array([
-        [0.1, 0.1],
-        [-0.1, 0.1],
-        [-0.1, -0.1],
-        [0.1, -0.1]
-    ])
-    depths = np.array([2.0, 2.0, 2.0, 2.0])
-
-    L_multiple = L_computer.compute_for_points(points, depths)
-    print(f"Shape: {L_multiple.shape}")
-    print(f"L =\n{L_multiple}\n")
-
-    # Test pseudo-inverse
-    print("3. Pseudo-inverse:")
-    L_pinv = L_computer.compute_pseudoinverse(L_multiple)
-    print(f"L+ shape: {L_pinv.shape}")
-    print(f"L+ =\n{L_pinv}\n")
-
-    # Check L * L+ (should be close to identity for full rank)
-    product = L_multiple @ L_pinv
-    print(f"L * L+ =\n{product}\n")
-
-    # Test condition number
-    print("4. Matrix analysis:")
-    cond = L_computer.compute_condition_number(L_multiple)
-    rank = L_computer.compute_rank(L_multiple)
-    print(f"Condition number: {cond:.2f}")
-    print(f"Rank: {rank}")
-    print(f"Is well-conditioned: {L_computer.is_well_conditioned(L_multiple)}\n")
-
-    # Test depth estimation
-    print("5. Depth estimation:")
-    current_pts = np.array([[0.2, 0.2], [-0.15, 0.15]])
-    desired_pts = np.array([[0.0, 0.0], [0.0, 0.0]])
-    desired_depths = np.array([2.5, 2.5])
-
-    for method in ['desired', 'mean', 'adaptive']:
-        estimated = L_computer.estimate_depth_from_desired(
-            current_pts, desired_pts, desired_depths, method=method
-        )
-        print(f"Method '{method}': {estimated}")

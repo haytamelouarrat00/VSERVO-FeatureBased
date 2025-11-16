@@ -10,12 +10,14 @@ class VisualServoingSimulator:
     Main simulator class that orchestrates the visual servoing control loop.
     """
 
-    def __init__(self,
-                 scene,
-                 initial_camera,
-                 desired_camera,
-                 controller_params=None,
-                 simulation_params=None):
+    def __init__(
+        self,
+        scene,
+        initial_camera,
+        desired_camera,
+        controller_params=None,
+        simulation_params=None,
+    ):
         """
         Initialize visual servoing simulator.
 
@@ -34,10 +36,10 @@ class VisualServoingSimulator:
         # Controller parameters
         if controller_params is None:
             controller_params = {
-                'gain': 0.5,
-                'control_law': 'classic',
-                'depth_estimation': 'desired',
-                'velocity_limits': {'linear': 0.5, 'angular': 0.5}
+                "gain": 0.5,
+                "control_law": "classic",
+                "depth_estimation": "desired",
+                "velocity_limits": {"linear": 0.5, "angular": 0.5},
             }
         self.controller_params = controller_params
 
@@ -47,17 +49,18 @@ class VisualServoingSimulator:
         # Simulation parameters
         if simulation_params is None:
             simulation_params = {
-                'dt': 0.01,  # Time step (seconds)
-                'max_iterations': 1000,
-                'convergence_threshold': 1e-3,
-                'check_visibility': True,
-                'stop_if_features_lost': True
+                "dt": 0.01,  # Time step (seconds)
+                "max_iterations": 1000,
+                "convergence_threshold": 1e-3,
+                "check_visibility": True,
+                "stop_if_features_lost": True,
             }
         self.simulation_params = simulation_params
 
         # Get desired features
-        self.desired_features, self.desired_depths, self.desired_valid = \
+        self.desired_features, self.desired_depths, self.desired_valid = (
             self.scene.project_to_normalized(self.desired_camera)
+        )
 
         # Simulation state
         self.iteration = 0
@@ -137,19 +140,19 @@ class VisualServoingSimulator:
         Returns:
             Dictionary with step information
         """
-        dt = self.simulation_params['dt']
+        dt = self.simulation_params["dt"]
 
         # Get current features
         current_features, current_depths, current_valid = self.get_current_features()
 
         # Check visibility if required
-        if self.simulation_params['check_visibility']:
+        if self.simulation_params["check_visibility"]:
             if not self.check_feature_visibility(current_features, current_valid):
                 self.features_lost = True
                 return {
-                    'success': False,
-                    'reason': 'features_lost',
-                    'iteration': self.iteration
+                    "success": False,
+                    "reason": "features_lost",
+                    "iteration": self.iteration,
                 }
 
         # Use only valid features (both in current and desired views)
@@ -158,9 +161,9 @@ class VisualServoingSimulator:
         if np.sum(valid_both) < 3:
             self.features_lost = True
             return {
-                'success': False,
-                'reason': 'insufficient_features',
-                'iteration': self.iteration
+                "success": False,
+                "reason": "insufficient_features",
+                "iteration": self.iteration,
             }
 
         # Extract valid features
@@ -174,7 +177,7 @@ class VisualServoingSimulator:
             current_features_valid,
             desired_features_valid,
             current_depths_valid,
-            desired_depths_valid
+            desired_depths_valid,
         )
 
         # Update camera pose
@@ -185,32 +188,34 @@ class VisualServoingSimulator:
         self.time_elapsed += dt
 
         # Store history
-        self.camera_poses_history.append({
-            'position': self.current_camera.position.copy(),
-            'rotation': self.current_camera.rotation.copy()
-        })
+        self.camera_poses_history.append(
+            {
+                "position": self.current_camera.position.copy(),
+                "rotation": self.current_camera.rotation.copy(),
+            }
+        )
         self.feature_history.append(current_features_valid.copy())
         self.time_history.append(self.time_elapsed)
 
         # Check convergence
         error_norm = self.controller.get_current_error_norm()
-        threshold = self.simulation_params['convergence_threshold']
+        threshold = self.simulation_params["convergence_threshold"]
 
         if self.controller.has_converged(threshold=threshold, window=5):
             self.converged = True
             return {
-                'success': True,
-                'reason': 'converged',
-                'iteration': self.iteration,
-                'error_norm': error_norm
+                "success": True,
+                "reason": "converged",
+                "iteration": self.iteration,
+                "error_norm": error_norm,
             }
 
         return {
-            'success': True,
-            'reason': 'running',
-            'iteration': self.iteration,
-            'error_norm': error_norm,
-            'velocity_norm': np.linalg.norm(velocity)
+            "success": True,
+            "reason": "running",
+            "iteration": self.iteration,
+            "error_norm": error_norm,
+            "velocity_norm": np.linalg.norm(velocity),
         }
 
     def run(self, verbose=True, callback=None):
@@ -227,7 +232,7 @@ class VisualServoingSimulator:
         """
         self.reset()
 
-        max_iter = self.simulation_params['max_iterations']
+        max_iter = self.simulation_params["max_iterations"]
 
         if verbose:
             print("=" * 60)
@@ -238,7 +243,9 @@ class VisualServoingSimulator:
             print(f"Number of features: {self.scene.n_points}")
             print(f"Control gain: {self.controller.gain}")
             print(f"Max iterations: {max_iter}")
-            print(f"Convergence threshold: {self.simulation_params['convergence_threshold']}")
+            print(
+                f"Convergence threshold: {self.simulation_params['convergence_threshold']}"
+            )
             print("-" * 60)
 
         # Run simulation loop
@@ -251,16 +258,16 @@ class VisualServoingSimulator:
 
             # Print progress
             if verbose and i % 50 == 0:
-                error_norm = step_info.get('error_norm', 0)
+                error_norm = step_info.get("error_norm", 0)
                 print(f"Iteration {i:4d}: Error = {error_norm:.6f}")
 
             # Check termination conditions
-            if not step_info['success']:
+            if not step_info["success"]:
                 if verbose:
                     print(f"\nSimulation stopped: {step_info['reason']}")
                     print(f"Final iteration: {step_info['iteration']}")
 
-                return self.get_results(success=False, reason=step_info['reason'])
+                return self.get_results(success=False, reason=step_info["reason"])
 
             if self.converged:
                 if verbose:
@@ -268,7 +275,7 @@ class VisualServoingSimulator:
                     print(f"Final error: {step_info['error_norm']:.8f}")
                     print(f"Time elapsed: {self.time_elapsed:.3f} seconds")
 
-                return self.get_results(success=True, reason='converged')
+                return self.get_results(success=True, reason="converged")
 
         # Max iterations reached
         if verbose:
@@ -276,9 +283,9 @@ class VisualServoingSimulator:
             error_norm = self.controller.get_current_error_norm()
             print(f"Final error: {error_norm:.6f}")
 
-        return self.get_results(success=False, reason='max_iterations')
+        return self.get_results(success=False, reason="max_iterations")
 
-    def get_results(self, success=True, reason=''):
+    def get_results(self, success=True, reason=""):
         """
         Compile simulation results.
 
@@ -286,43 +293,37 @@ class VisualServoingSimulator:
             Dictionary with comprehensive results
         """
         results = {
-            'success': success,
-            'reason': reason,
-            'converged': self.converged,
-            'iterations': self.iteration,
-            'time_elapsed': self.time_elapsed,
-            'final_error': self.controller.get_current_error_norm(),
-
+            "success": success,
+            "reason": reason,
+            "converged": self.converged,
+            "iterations": self.iteration,
+            "time_elapsed": self.time_elapsed,
+            "final_error": self.controller.get_current_error_norm(),
             # Camera poses
-            'initial_position': self.initial_camera.position.copy(),
-            'desired_position': self.desired_camera.position.copy(),
-            'final_position': self.current_camera.position.copy(),
-            'initial_rotation': self.initial_camera.rotation.copy(),
-            'desired_rotation': self.desired_camera.rotation.copy(),
-            'final_rotation': self.current_camera.rotation.copy(),
-
+            "initial_position": self.initial_camera.position.copy(),
+            "desired_position": self.desired_camera.position.copy(),
+            "final_position": self.current_camera.position.copy(),
+            "initial_rotation": self.initial_camera.rotation.copy(),
+            "desired_rotation": self.desired_camera.rotation.copy(),
+            "final_rotation": self.current_camera.rotation.copy(),
             # Errors
-            'position_error': np.linalg.norm(
+            "position_error": np.linalg.norm(
                 self.current_camera.position - self.desired_camera.position
             ),
-
             # History
-            'error_history': np.array(self.controller.error_norm_history),
-            'velocity_history': np.array(self.controller.velocity_history),
-            'time_history': np.array(self.time_history),
-            'camera_trajectory': self.current_camera.position_history,
-
+            "error_history": np.array(self.controller.error_norm_history),
+            "velocity_history": np.array(self.controller.velocity_history),
+            "time_history": np.array(self.time_history),
+            "camera_trajectory": self.current_camera.position_history,
             # Controller info
-            'controller_params': self.controller_params,
-            'simulation_params': self.simulation_params
+            "controller_params": self.controller_params,
+            "simulation_params": self.simulation_params,
         }
 
         # Compute rotation error (Frobenius norm of rotation difference)
         R_error = self.current_camera.rotation @ self.desired_camera.rotation.T
-        rotation_error_angle = np.arccos(
-            np.clip((np.trace(R_error) - 1) / 2, -1, 1)
-        )
-        results['rotation_error_angle'] = rotation_error_angle
+        rotation_error_angle = np.arccos(np.clip((np.trace(R_error) - 1) / 2, -1, 1))
+        results["rotation_error_angle"] = rotation_error_angle
 
         return results
 
@@ -338,7 +339,9 @@ class VisualServoingSimulator:
         print(f"\nFinal Errors:")
         print(f"  Feature error: {results['final_error']:.8f}")
         print(f"  Position error: {results['position_error']:.6f} m")
-        print(f"  Rotation error: {np.degrees(results['rotation_error_angle']):.4f} degrees")
+        print(
+            f"  Rotation error: {np.degrees(results['rotation_error_angle']):.4f} degrees"
+        )
         print(f"\nPositions:")
         print(f"  Initial:  {results['initial_position']}")
         print(f"  Desired:  {results['desired_position']}")
@@ -378,8 +381,7 @@ class SimulatorFactory:
     """
 
     @staticmethod
-    def create_standard_simulator(scene_type='planar', gain=0.5,
-                                  control_law='classic'):
+    def create_standard_simulator(scene_type="planar", gain=0.5, control_law="classic"):
         """
         Create a standard simulator setup.
 
@@ -393,27 +395,27 @@ class SimulatorFactory:
         """
         from scene import SceneConfiguration
 
-        scene, initial_cam, desired_cam = \
-            SceneConfiguration.create_standard_setup(scene_type)
+        scene, initial_cam, desired_cam = SceneConfiguration.create_standard_setup(
+            scene_type
+        )
 
         controller_params = {
-            'gain': gain,
-            'control_law': control_law,
-            'depth_estimation': 'desired',
-            'velocity_limits': {'linear': 0.5, 'angular': 0.5}
+            "gain": gain,
+            "control_law": control_law,
+            "depth_estimation": "desired",
+            "velocity_limits": {"linear": 0.5, "angular": 0.5},
         }
 
         simulation_params = {
-            'dt': 0.01,
-            'max_iterations': 1000,
-            'convergence_threshold': 1e-3,
-            'check_visibility': True,
-            'stop_if_features_lost': True
+            "dt": 0.01,
+            "max_iterations": 1000,
+            "convergence_threshold": 1e-3,
+            "check_visibility": True,
+            "stop_if_features_lost": True,
         }
 
         return VisualServoingSimulator(
-            scene, initial_cam, desired_cam,
-            controller_params, simulation_params
+            scene, initial_cam, desired_cam, controller_params, simulation_params
         )
 
     @staticmethod
@@ -423,101 +425,55 @@ class SimulatorFactory:
         """
         from scene import SceneConfiguration
 
-        scene, initial_cam, desired_cam = \
+        scene, initial_cam, desired_cam = (
             SceneConfiguration.create_large_displacement_setup()
+        )
 
         controller_params = {
-            'gain': gain,  # Lower gain for stability
-            'control_law': 'adaptive',
-            'depth_estimation': 'desired',
-            'velocity_limits': {'linear': 0.3, 'angular': 0.3}
+            "gain": gain,  # Lower gain for stability
+            "control_law": "adaptive",
+            "depth_estimation": "desired",
+            "velocity_limits": {"linear": 0.3, "angular": 0.3},
         }
 
         simulation_params = {
-            'dt': 0.01,
-            'max_iterations': 2000,
-            'convergence_threshold': 1e-3,
-            'check_visibility': True,
-            'stop_if_features_lost': True
+            "dt": 0.01,
+            "max_iterations": 2000,
+            "convergence_threshold": 1e-3,
+            "check_visibility": True,
+            "stop_if_features_lost": True,
         }
 
         return VisualServoingSimulator(
-            scene, initial_cam, desired_cam,
-            controller_params, simulation_params
+            scene, initial_cam, desired_cam, controller_params, simulation_params
         )
 
     @staticmethod
-    def create_fast_simulator(scene_type='planar'):
+    def create_fast_simulator(scene_type="planar"):
         """
         Create simulator optimized for fast convergence.
         """
         from scene import SceneConfiguration
 
-        scene, initial_cam, desired_cam = \
-            SceneConfiguration.create_standard_setup(scene_type)
+        scene, initial_cam, desired_cam = SceneConfiguration.create_standard_setup(
+            scene_type
+        )
 
         controller_params = {
-            'gain': 0.8,  # High gain
-            'control_law': 'classic',
-            'depth_estimation': 'desired',
-            'velocity_limits': {'linear': 0.8, 'angular': 0.8}
+            "gain": 0.8,  # High gain
+            "control_law": "classic",
+            "depth_estimation": "desired",
+            "velocity_limits": {"linear": 0.8, "angular": 0.8},
         }
 
         simulation_params = {
-            'dt': 0.005,  # Smaller time step
-            'max_iterations': 500,
-            'convergence_threshold': 1e-3,
-            'check_visibility': True,
-            'stop_if_features_lost': True
+            "dt": 0.005,  # Smaller time step
+            "max_iterations": 500,
+            "convergence_threshold": 1e-3,
+            "check_visibility": True,
+            "stop_if_features_lost": True,
         }
 
         return VisualServoingSimulator(
-            scene, initial_cam, desired_cam,
-            controller_params, simulation_params
+            scene, initial_cam, desired_cam, controller_params, simulation_params
         )
-
-
-# Testing
-if __name__ == "__main__":
-    print("=== Testing VisualServoingSimulator ===\n")
-
-    # Create a standard simulator
-    print("1. Creating standard simulator...")
-    sim = SimulatorFactory.create_standard_simulator(
-        scene_type='planar',
-        gain=0.5,
-        control_law='classic'
-    )
-
-    # Run simulation
-    print("\n2. Running simulation...")
-    results = sim.run(verbose=True)
-
-    # Print results
-    sim.print_results(results)
-
-    # Test step-by-step execution
-    print("\n3. Testing step-by-step execution...")
-    sim.reset()
-
-    for i in range(10):
-        step_info = sim.step()
-        if i % 3 == 0:
-            print(f"Step {i}: Error = {step_info.get('error_norm', 0):.6f}")
-
-    # Test different configurations
-    print("\n4. Testing large displacement setup...")
-    sim_large = SimulatorFactory.create_large_displacement_simulator(gain=0.3)
-    results_large = sim_large.run(verbose=False)
-
-    print(f"Large displacement - Success: {results_large['success']}")
-    print(f"Iterations: {results_large['iterations']}")
-    print(f"Final error: {results_large['final_error']:.6f}")
-
-    print("\n5. Testing fast convergence setup...")
-    sim_fast = SimulatorFactory.create_fast_simulator('planar')
-    results_fast = sim_fast.run(verbose=False)
-
-    print(f"Fast mode - Success: {results_fast['success']}")
-    print(f"Iterations: {results_fast['iterations']}")
-    print(f"Time: {results_fast['time_elapsed']:.3f} seconds")

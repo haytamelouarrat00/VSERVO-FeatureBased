@@ -5,9 +5,10 @@ Visual Servoing Simulation - Main Script
 Complete implementation of Image-Based Visual Servoing (IBVS) based on
 Chaumette's work. This script demonstrates various scenarios and configurations.
 
-Author:
-Date: 2024
+Author: El Ouarrat Haytam
+Date: 2025
 """
+
 from pathlib import Path
 import os
 import numpy as np
@@ -42,16 +43,13 @@ def example_8_harris_corners_checkerboard():
     # Create simulator
     print("Detecting Harris corners...")
     sim = create_image_based_simulator(
-        image_array=checkerboard,
-        max_features=16,
-        gain=0.5,
-        displacement='small'
+        image_array=checkerboard, max_features=16, gain=0.5, displacement="small"
     )
 
     print(f"Features detected: {len(sim.scene.points_3d)}")
 
     # Show detected corners
-    sim.image_scene.visualize(save_path='example8_corners.png')
+    sim.image_scene.visualize(save_path="example8_corners.png")
 
     print("\nRunning visual servoing simulation...")
 
@@ -59,7 +57,7 @@ def example_8_harris_corners_checkerboard():
     live_vis = LiveVisualizer(sim)
     results = live_vis.run_with_visualization(verbose=True)
 
-    live_vis.save_all(prefix='example8_checkerboard')
+    live_vis.save_all(prefix="example8_checkerboard")
 
     sim.print_results(results)
 
@@ -85,16 +83,13 @@ def example_9_harris_corners_custom_image():
     # Create simulator
     print("Detecting Harris corners...")
     sim = create_image_based_simulator(
-        image_array=star,
-        max_features=12,
-        gain=0.6,
-        displacement='medium'
+        image_array=star, max_features=12, gain=0.6, displacement="medium"
     )
 
     print(f"Features detected: {len(sim.scene.points_3d)}")
 
     # Show detected corners
-    sim.image_scene.visualize(save_path='example9_corners.png')
+    sim.image_scene.visualize(save_path="example9_corners.png")
 
     print("\nRunning visual servoing simulation...")
     results = sim.run(verbose=True)
@@ -106,8 +101,8 @@ def example_9_harris_corners_custom_image():
     vis_3d = Visualizer3D(sim.scene, sim.initial_camera, sim.desired_camera)
     vis_3d.update_visualization(sim.current_camera)
 
-    plot_manager.save('example9_plots.png')
-    vis_3d.save('example9_3d.png')
+    plot_manager.save("example9_plots.png")
+    vis_3d.save("example9_3d.png")
 
     sim.print_results(results)
 
@@ -153,8 +148,8 @@ def example_10_load_custom_image():
 
     print("\nInitial displacement? (small/medium/large)")
     disp_input = input("Displacement [default: medium]: ").strip().lower()
-    if disp_input not in ['small', 'medium', 'large']:
-        disp_input = 'medium'
+    if disp_input not in ["small", "medium", "large"]:
+        disp_input = "medium"
 
     print("\n" + "-" * 70)
     print("CONFIGURATION:")
@@ -170,7 +165,7 @@ def example_10_load_custom_image():
             image_path=image_path,
             max_features=n_features,
             gain=gain,
-            displacement=disp_input
+            displacement=disp_input,
         )
 
         print(f"Successfully detected {len(sim.scene.points_3d)} features!")
@@ -183,7 +178,7 @@ def example_10_load_custom_image():
         live_vis = LiveVisualizer(sim)
         results = live_vis.run_with_visualization(verbose=True)
 
-        live_vis.save_all(prefix='example10_custom')
+        live_vis.save_all(prefix="example10_custom")
 
         sim.print_results(results)
 
@@ -206,9 +201,7 @@ def example_1_basic_simulation():
 
     # Create a standard simulator
     sim = SimulatorFactory.create_standard_simulator(
-        scene_type='planar',
-        gain=0.5,
-        control_law='classic'
+        scene_type="planar", gain=0.5, control_law="classic"
     )
 
     print("\nConfiguration:")
@@ -228,8 +221,8 @@ def example_1_basic_simulation():
     vis_3d.update_visualization(sim.current_camera)
 
     # Save results
-    plot_manager.save('example1_plots.png')
-    vis_3d.save('example1_3d.png')
+    plot_manager.save("example1_plots.png")
+    vis_3d.save("example1_3d.png")
 
     sim.print_results(results)
 
@@ -266,8 +259,8 @@ def example_2_large_displacement():
     vis_3d = Visualizer3D(sim.scene, sim.initial_camera, sim.desired_camera)
     vis_3d.update_visualization(sim.current_camera)
 
-    plot_manager.save('example2_plots.png')
-    vis_3d.save('example2_3d.png')
+    plot_manager.save("example2_plots.png")
+    vis_3d.save("example2_3d.png")
 
     sim.print_results(results)
 
@@ -285,21 +278,20 @@ def example_3_different_scenes():
     print("EXAMPLE 3: Comparison of Different Scene Types")
     print("=" * 70)
 
-    scene_types = ['planar', 'cube', 'grid']
+    scene_types = ["planar", "cube", "grid"]
     results_all = {}
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-    fig.suptitle('Error Evolution for Different Scene Types',
-                 fontsize=14, fontweight='bold')
+    fig.suptitle(
+        "Error Evolution for Different Scene Types", fontsize=14, fontweight="bold"
+    )
 
     for idx, scene_type in enumerate(scene_types):
         print(f"\n--- Testing {scene_type.upper()} scene ---")
 
         # Create simulator
         sim = SimulatorFactory.create_standard_simulator(
-            scene_type=scene_type,
-            gain=0.5,
-            control_law='classic'
+            scene_type=scene_type, gain=0.5, control_law="classic"
         )
 
         # Run simulation
@@ -309,12 +301,13 @@ def example_3_different_scenes():
         # Plot error evolution
         ax = axes[idx]
         iterations = np.arange(len(sim.controller.error_norm_history))
-        ax.plot(iterations, sim.controller.error_norm_history,
-                linewidth=2, color='blue')
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Error Norm')
-        ax.set_title(f'{scene_type.capitalize()} Scene')
-        ax.set_yscale('log')
+        ax.plot(
+            iterations, sim.controller.error_norm_history, linewidth=2, color="blue"
+        )
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel("Error Norm")
+        ax.set_title(f"{scene_type.capitalize()} Scene")
+        ax.set_yscale("log")
         ax.grid(True, alpha=0.3)
 
         # Print summary
@@ -323,7 +316,7 @@ def example_3_different_scenes():
         print(f"  Final error: {results['final_error']:.6f}")
 
     plt.tight_layout()
-    plt.savefig('example3_comparison.png', dpi=150, bbox_inches='tight')
+    plt.savefig("example3_comparison.png", dpi=150, bbox_inches="tight")
     plt.show()
 
     return results_all
@@ -341,36 +334,37 @@ def example_4_gain_comparison():
     gains = [0.2, 0.5, 0.8, 1.2]
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-    fig.suptitle('Effect of Control Gain on Convergence',
-                 fontsize=14, fontweight='bold')
+    fig.suptitle(
+        "Effect of Control Gain on Convergence", fontsize=14, fontweight="bold"
+    )
     axes = axes.flatten()
 
     for idx, gain in enumerate(gains):
         print(f"\n--- Testing gain = {gain} ---")
 
         # Create scene and cameras
-        scene, initial_cam, desired_cam = \
-            SceneConfiguration.create_standard_setup('planar')
+        scene, initial_cam, desired_cam = SceneConfiguration.create_standard_setup(
+            "planar"
+        )
 
         # Create simulator with specific gain
         controller_params = {
-            'gain': gain,
-            'control_law': 'classic',
-            'depth_estimation': 'desired',
-            'velocity_limits': {'linear': 1.0, 'angular': 1.0}
+            "gain": gain,
+            "control_law": "classic",
+            "depth_estimation": "desired",
+            "velocity_limits": {"linear": 1.0, "angular": 1.0},
         }
 
         simulation_params = {
-            'dt': 0.01,
-            'max_iterations': 50000,
-            'convergence_threshold': 1e-3,
-            'check_visibility': True,
-            'stop_if_features_lost': True
+            "dt": 0.01,
+            "max_iterations": 50000,
+            "convergence_threshold": 1e-3,
+            "check_visibility": True,
+            "stop_if_features_lost": True,
         }
 
         sim = VisualServoingSimulator(
-            scene, initial_cam, desired_cam,
-            controller_params, simulation_params
+            scene, initial_cam, desired_cam, controller_params, simulation_params
         )
 
         # Run simulation
@@ -379,32 +373,41 @@ def example_4_gain_comparison():
         # Plot
         ax = axes[idx]
         iterations = np.arange(len(sim.controller.error_norm_history))
-        ax.plot(iterations, sim.controller.error_norm_history,
-                linewidth=2, color='blue')
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Error Norm')
-        ax.set_title(f'Gain λ = {gain}')
-        ax.set_yscale('log')
+        ax.plot(
+            iterations, sim.controller.error_norm_history, linewidth=2, color="blue"
+        )
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel("Error Norm")
+        ax.set_title(f"Gain λ = {gain}")
+        ax.set_yscale("log")
         ax.grid(True, alpha=0.3)
 
         # Add convergence info
-        if results['converged']:
-            ax.text(0.6, 0.9, f"Converged\nIter: {results['iterations']}",
-                    transform=ax.transAxes,
-                    bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8),
-                    fontsize=9)
+        if results["converged"]:
+            ax.text(
+                0.6,
+                0.9,
+                f"Converged\nIter: {results['iterations']}",
+                transform=ax.transAxes,
+                bbox=dict(boxstyle="round", facecolor="lightgreen", alpha=0.8),
+                fontsize=9,
+            )
         else:
-            ax.text(0.6, 0.9, f"Not converged\nFinal error: {results['final_error']:.4f}",
-                    transform=ax.transAxes,
-                    bbox=dict(boxstyle='round', facecolor='lightcoral', alpha=0.8),
-                    fontsize=9)
+            ax.text(
+                0.6,
+                0.9,
+                f"Not converged\nFinal error: {results['final_error']:.4f}",
+                transform=ax.transAxes,
+                bbox=dict(boxstyle="round", facecolor="lightcoral", alpha=0.8),
+                fontsize=9,
+            )
 
         print(f"  Converged: {results['converged']}")
         print(f"  Iterations: {results['iterations']}")
         print(f"  Final error: {results['final_error']:.6f}")
 
     plt.tight_layout()
-    plt.savefig('example4_gain_comparison.png', dpi=150, bbox_inches='tight')
+    plt.savefig("example4_gain_comparison.png", dpi=150, bbox_inches="tight")
     plt.show()
 
 
@@ -421,9 +424,7 @@ def example_5_live_visualization():
 
     # Create simulator
     sim = SimulatorFactory.create_standard_simulator(
-        scene_type='planar',
-        gain=0.5,
-        control_law='classic'
+        scene_type="planar", gain=0.5, control_law="classic"
     )
 
     # Create live visualizer
@@ -433,7 +434,7 @@ def example_5_live_visualization():
     results = live_vis.run_with_visualization(verbose=True)
 
     # Save results
-    live_vis.save_all(prefix='example5_live')
+    live_vis.save_all(prefix="example5_live")
 
     sim.print_results(results)
 
@@ -450,7 +451,7 @@ def example_6_custom_scenario():
     print("=" * 70)
 
     # Create scene
-    scene = VirtualScene(scene_type='planar', size=1.0, z_plane=0.0)
+    scene = VirtualScene(scene_type="planar", size=1.0, z_plane=0.0)
 
     # Create cameras at same position, different orientations
     position = [0, 0, -2.0]
@@ -460,7 +461,7 @@ def example_6_custom_scenario():
         image_width=640,
         image_height=480,
         position=position,
-        orientation=np.eye(3)
+        orientation=np.eye(3),
     )
 
     desired_camera = Camera(
@@ -468,11 +469,11 @@ def example_6_custom_scenario():
         image_width=640,
         image_height=480,
         position=position,
-        orientation=np.eye(3)
+        orientation=np.eye(3),
     )
 
     # Rotate initial camera by 20 degrees around Y axis
-    rotation = R.from_euler('y', 25, degrees=True).as_matrix()
+    rotation = R.from_euler("y", 25, degrees=True).as_matrix()
     initial_camera.rotation = rotation @ initial_camera.rotation
 
     # Make cameras look at scene
@@ -486,24 +487,23 @@ def example_6_custom_scenario():
 
     # Create controller parameters
     controller_params = {
-        'gain': 0.6,
-        'control_law': 'classic',
-        'depth_estimation': 'desired',
-        'velocity_limits': {'linear': 0.5, 'angular': 0.5}
+        "gain": 0.6,
+        "control_law": "classic",
+        "depth_estimation": "desired",
+        "velocity_limits": {"linear": 0.5, "angular": 0.5},
     }
 
     simulation_params = {
-        'dt': 0.01,
-        'max_iterations': 50000,
-        'convergence_threshold': 1e-3,
-        'check_visibility': True,
-        'stop_if_features_lost': True
+        "dt": 0.01,
+        "max_iterations": 50000,
+        "convergence_threshold": 1e-3,
+        "check_visibility": True,
+        "stop_if_features_lost": True,
     }
 
     # Create simulator
     sim = VisualServoingSimulator(
-        scene, initial_camera, desired_camera,
-        controller_params, simulation_params
+        scene, initial_camera, desired_camera, controller_params, simulation_params
     )
 
     # Run
@@ -516,8 +516,8 @@ def example_6_custom_scenario():
     vis_3d = Visualizer3D(sim.scene, sim.initial_camera, sim.desired_camera)
     vis_3d.update_visualization(sim.current_camera)
 
-    plot_manager.save('example6_plots.png')
-    vis_3d.save('example6_3d.png')
+    plot_manager.save("example6_plots.png")
+    vis_3d.save("example6_3d.png")
 
     sim.print_results(results)
 
@@ -536,7 +536,7 @@ def example_7_sphere_scene():
     print("=" * 70)
 
     # Create sphere scene
-    scene = VirtualScene(scene_type='sphere', n_points=12, radius=0.5)
+    scene = VirtualScene(scene_type="sphere", n_points=12, radius=0.5)
 
     # Create cameras
     initial_camera = Camera(
@@ -544,7 +544,7 @@ def example_7_sphere_scene():
         image_width=640,
         image_height=480,
         position=[0.5, 0.4, -1.8],
-        orientation=np.eye(3)
+        orientation=np.eye(3),
     )
 
     desired_camera = Camera(
@@ -552,7 +552,7 @@ def example_7_sphere_scene():
         image_width=640,
         image_height=480,
         position=[0, 0, -2.5],
-        orientation=np.eye(3)
+        orientation=np.eye(3),
     )
 
     # Orient cameras
@@ -567,23 +567,22 @@ def example_7_sphere_scene():
 
     # Create simulator
     controller_params = {
-        'gain': 0.5,
-        'control_law': 'classic',
-        'depth_estimation': 'desired',
-        'velocity_limits': {'linear': 0.5, 'angular': 0.5}
+        "gain": 0.5,
+        "control_law": "classic",
+        "depth_estimation": "desired",
+        "velocity_limits": {"linear": 0.5, "angular": 0.5},
     }
 
     simulation_params = {
-        'dt': 0.01,
-        'max_iterations': 50000,
-        'convergence_threshold': 1e-3,
-        'check_visibility': True,
-        'stop_if_features_lost': True
+        "dt": 0.01,
+        "max_iterations": 50000,
+        "convergence_threshold": 1e-3,
+        "check_visibility": True,
+        "stop_if_features_lost": True,
     }
 
     sim = VisualServoingSimulator(
-        scene, initial_camera, desired_camera,
-        controller_params, simulation_params
+        scene, initial_camera, desired_camera, controller_params, simulation_params
     )
 
     # Run
@@ -596,8 +595,8 @@ def example_7_sphere_scene():
     vis_3d = Visualizer3D(sim.scene, sim.initial_camera, sim.desired_camera)
     vis_3d.update_visualization(sim.current_camera)
 
-    plot_manager.save('example7_plots.png')
-    vis_3d.save('example7_3d.png')
+    plot_manager.save("example7_plots.png")
+    vis_3d.save("example7_3d.png")
 
     sim.print_results(results)
 
@@ -621,8 +620,8 @@ def interactive_demo():
     print("  4. Sphere (12 points)")
 
     scene_choice = input("\nEnter choice (1-4) [default: 1]: ").strip()
-    scene_map = {'1': 'planar', '2': 'cube', '3': 'grid', '4': 'sphere'}
-    scene_type = scene_map.get(scene_choice, 'planar')
+    scene_map = {"1": "planar", "2": "cube", "3": "grid", "4": "sphere"}
+    scene_type = scene_map.get(scene_choice, "planar")
 
     print("\nSelect control gain:")
     gain_input = input("Enter gain (0.1-2.0) [default: 0.5]: ").strip()
@@ -636,11 +635,11 @@ def interactive_demo():
     print("  1. Classic IBVS")
     print("  2. Adaptive gain")
     law_choice = input("\nEnter choice (1-2) [default: 1]: ").strip()
-    control_law = 'adaptive' if law_choice == '2' else 'classic'
+    control_law = "adaptive" if law_choice == "2" else "classic"
 
     print("\nShow live visualization?")
     viz_choice = input("(y/n) [default: y]: ").strip().lower()
-    show_live = viz_choice != 'n'
+    show_live = viz_choice != "n"
 
     print("\n" + "-" * 70)
     print("CONFIGURATION:")
@@ -652,15 +651,13 @@ def interactive_demo():
 
     # Create simulator
     sim = SimulatorFactory.create_standard_simulator(
-        scene_type=scene_type,
-        gain=gain,
-        control_law=control_law
+        scene_type=scene_type, gain=gain, control_law=control_law
     )
 
     if show_live:
         live_vis = LiveVisualizer(sim)
         results = live_vis.run_with_visualization(verbose=True)
-        live_vis.save_all(prefix='interactive_demo')
+        live_vis.save_all(prefix="interactive_demo")
     else:
         results = sim.run(verbose=True)
 
@@ -670,8 +667,8 @@ def interactive_demo():
         vis_3d = Visualizer3D(sim.scene, sim.initial_camera, sim.desired_camera)
         vis_3d.update_visualization(sim.current_camera)
 
-        plot_manager.save('interactive_demo_plots.png')
-        vis_3d.save('interactive_demo_3d.png')
+        plot_manager.save("interactive_demo_plots.png")
+        vis_3d.save("interactive_demo_3d.png")
 
         plt.show()
 
@@ -724,8 +721,8 @@ def example_12_user_image_batch():
         image_path=image_path,
         max_features=20,
         gain=0.5,
-        displacement='medium',
-        show_viz=True
+        displacement="medium",
+        show_viz=True,
     )
 
     return results
@@ -777,15 +774,13 @@ def example_13_compare_multiple_images():
 
         # Load image
         from sift_utility import load_user_image
+
         image = load_user_image(image_path)
         if image is None:
             continue
         try:
             sim = create_user_image_simulator(
-                image_array=image,
-                max_features=20,
-                gain=0.5,
-                displacement='medium'
+                image_array=image, max_features=20, gain=0.5, displacement="medium"
             )
 
             print(f"Features detected: {len(sim.scene.points_3d)}")
@@ -802,26 +797,36 @@ def example_13_compare_multiple_images():
 
             # Draw detected features
             coords = sim.sift_scene.reference_coords
-            ax_img.scatter(coords[:, 0], coords[:, 1],
-                           c='red', marker='x', s=100, linewidths=2)
-            ax_img.set_title(f'{image_name}\n({len(coords)} features)',
-                             fontsize=12, fontweight='bold')
-            ax_img.axis('off')
+            ax_img.scatter(
+                coords[:, 0], coords[:, 1], c="red", marker="x", s=100, linewidths=2
+            )
+            ax_img.set_title(
+                f"{image_name}\n({len(coords)} features)",
+                fontsize=12,
+                fontweight="bold",
+            )
+            ax_img.axis("off")
 
             # Plot error evolution
             ax_error = axes[idx, 1]
             iterations = np.arange(len(sim.controller.error_norm_history))
-            ax_error.plot(iterations, sim.controller.error_norm_history,
-                          linewidth=2, color='blue')
-            ax_error.set_xlabel('Iteration', fontsize=11)
-            ax_error.set_ylabel('Error Norm', fontsize=11)
-            ax_error.set_title(f'Error Evolution - {image_name}', fontsize=12)
-            ax_error.set_yscale('log')
+            ax_error.plot(
+                iterations, sim.controller.error_norm_history, linewidth=2, color="blue"
+            )
+            ax_error.set_xlabel("Iteration", fontsize=11)
+            ax_error.set_ylabel("Error Norm", fontsize=11)
+            ax_error.set_title(f"Error Evolution - {image_name}", fontsize=12)
+            ax_error.set_yscale("log")
             ax_error.grid(True, alpha=0.3)
 
-            if results['converged']:
-                ax_error.axvline(results['iterations'], color='green',
-                                 linestyle='--', alpha=0.7, label='Converged')
+            if results["converged"]:
+                ax_error.axvline(
+                    results["iterations"],
+                    color="green",
+                    linestyle="--",
+                    alpha=0.7,
+                    label="Converged",
+                )
                 ax_error.legend()
 
         except Exception as e:
@@ -829,21 +834,23 @@ def example_13_compare_multiple_images():
             continue
 
     plt.tight_layout()
-    plt.savefig('user_images_comparison.png', dpi=150, bbox_inches='tight')
+    plt.savefig("user_images_comparison.png", dpi=150, bbox_inches="tight")
     plt.show()
 
     # Print comparison table
     print("\n" + "=" * 70)
     print("COMPARISON RESULTS")
     print("=" * 70)
-    print(f"{'Image':<25} {'Features':<10} {'Converged':<12} {'Iterations':<12} {'Final Error':<15}")
+    print(
+        f"{'Image':<25} {'Features':<10} {'Converged':<12} {'Iterations':<12} {'Final Error':<15}"
+    )
     print("-" * 70)
 
     for name, results in results_all.items():
-        converged = "✓ Yes" if results['converged'] else "✗ No"
-        iters = results['iterations']
-        error = results['final_error']
-        n_features = results.get('n_features', 'N/A')
+        converged = "✓ Yes" if results["converged"] else "✗ No"
+        iters = results["iterations"]
+        error = results["final_error"]
+        n_features = results.get("n_features", "N/A")
         print(f"{name:<25} {n_features:<10} {converged:<12} {iters:<12} {error:<15.6f}")
 
     print("=" * 70)
@@ -881,36 +888,36 @@ def main():
     while True:
         choice = input("\nEnter choice (0-14): ").strip()
 
-        if choice == '0':
+        if choice == "0":
             print("\nExiting. Goodbye!")
             break
-        elif choice == '1':
+        elif choice == "1":
             example_1_basic_simulation()
-        elif choice == '2':
+        elif choice == "2":
             example_2_large_displacement()
-        elif choice == '3':
+        elif choice == "3":
             example_3_different_scenes()
-        elif choice == '4':
+        elif choice == "4":
             example_4_gain_comparison()
-        elif choice == '5':
+        elif choice == "5":
             example_5_live_visualization()
-        elif choice == '6':
+        elif choice == "6":
             example_6_custom_scenario()
-        elif choice == '7':
+        elif choice == "7":
             example_7_sphere_scene()
-        elif choice == '8':
+        elif choice == "8":
             interactive_demo()
-        elif choice == '9':
+        elif choice == "9":
             example_8_harris_corners_checkerboard()
-        elif choice == '10':
+        elif choice == "10":
             example_9_harris_corners_custom_image()
-        elif choice == '11':
+        elif choice == "11":
             example_11_user_image_interactive()
-        elif choice == '12':
+        elif choice == "12":
             example_12_user_image_batch()
-        elif choice == '13':
+        elif choice == "13":
             example_13_compare_multiple_images()
-        elif choice == '14':
+        elif choice == "14":
             print("\nRunning all basic examples (1-8)...\n")
             example_1_basic_simulation()
             example_2_large_displacement()
@@ -925,7 +932,7 @@ def main():
             print("Invalid choice. Please enter 0-14.")
 
         cont = input("\nRun another example? (y/n): ").strip().lower()
-        if cont != 'y':
+        if cont != "y":
             print("\nExiting. Goodbye!")
             break
 

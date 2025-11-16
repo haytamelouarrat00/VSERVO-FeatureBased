@@ -749,11 +749,6 @@ results = sim.run(verbose=True)
    *IEEE Robotics & Automation Magazine*, 14(1), 109-118.
    - Advanced techniques and hybrid approaches
 
-3. **Espiau, B., Chaumette, F., & Rives, P. (1992).**  
-   "A new approach to visual servoing in robotics"  
-   *IEEE Transactions on Robotics and Automation*, 8(3), 313-326.
-   - Task function approach
-
 4. **Lowe, D. G. (2004).**  
    "Distinctive image features from scale-invariant keypoints"  
    *International Journal of Computer Vision*, 60(2), 91-110.
@@ -801,16 +796,6 @@ pip install -r requirements.txt
 python -m pytest tests/
 ```
 
-### Pull Request Process
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests if applicable
-5. Update documentation
-6. Commit (`git commit -m 'Add amazing feature'`)
-7. Push (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
 
 ### Code Style
 
@@ -834,22 +819,6 @@ of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction...
 ```
 
----
-
-## 🙏 Acknowledgments
-
-- **François Chaumette** for pioneering work in visual servoing
-- **Peter Corke** for excellent robotics educational resources
-- **OpenCV community** for robust computer vision tools
-- All contributors and users of this project
-
----
-
-## 📞 Contact & Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/visual-servoing-ibvs/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/visual-servoing-ibvs/discussions)
-- **Email**: your.email@example.com
 
 ---
 
@@ -881,7 +850,6 @@ in the Software without restriction...
 
 <div align="center">
 
-**Made with ❤️ for robotics and computer vision education**
 
 [⬆ Back to Top](#-image-based-visual-servoing-ibvs-simulator)
 

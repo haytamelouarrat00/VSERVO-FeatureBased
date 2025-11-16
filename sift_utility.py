@@ -1,5 +1,3 @@
-
-
 import numpy as np
 import cv2
 import os
@@ -64,8 +62,8 @@ def preview_image_with_features(image, max_features=20):
 
         # Original image
         axes[0].imshow(image)
-        axes[0].set_title('Original Image', fontsize=14, fontweight='bold')
-        axes[0].axis('off')
+        axes[0].set_title("Original Image", fontsize=14, fontweight="bold")
+        axes[0].axis("off")
 
         # Image with features
         if len(image.shape) == 3:
@@ -77,13 +75,18 @@ def preview_image_with_features(image, max_features=20):
             gray,
             tracker.reference_keypoints,
             None,
-            flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
+            flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS,
         )
 
-        axes[1].imshow(img_with_kp, cmap='gray' if len(img_with_kp.shape) == 2 else None)
-        axes[1].set_title(f'Detected SIFT Features ({len(coords)} features)',
-                          fontsize=14, fontweight='bold')
-        axes[1].axis('off')
+        axes[1].imshow(
+            img_with_kp, cmap="gray" if len(img_with_kp.shape) == 2 else None
+        )
+        axes[1].set_title(
+            f"Detected SIFT Features ({len(coords)} features)",
+            fontsize=14,
+            fontweight="bold",
+        )
+        axes[1].axis("off")
 
         plt.tight_layout()
         plt.show()
@@ -95,12 +98,14 @@ def preview_image_with_features(image, max_features=20):
         return 0
 
 
-def create_user_image_simulator(image_path=None,
-                                image_array=None,
-                                max_features=20,
-                                gain=0.5,
-                                displacement='medium',
-                                feature_quality='medium'):
+def create_user_image_simulator(
+    image_path=None,
+    image_array=None,
+    max_features=20,
+    gain=0.5,
+    displacement="medium",
+    feature_quality="medium",
+):
     """
     Create visual servoing simulator from user image.
 
@@ -125,10 +130,10 @@ def create_user_image_simulator(image_path=None,
         raise ValueError("No image provided")
 
     # Adjust SIFT parameters based on quality
-    if feature_quality == 'low':
+    if feature_quality == "low":
         contrast_threshold = 0.06
         edge_threshold = 15
-    elif feature_quality == 'high':
+    elif feature_quality == "high":
         contrast_threshold = 0.02
         edge_threshold = 8
     else:  # medium
@@ -146,7 +151,7 @@ def create_user_image_simulator(image_path=None,
         reference_image_array=image_array,
         max_features=max_features,
         plane_depth=0.0,
-        plane_size=1.0
+        plane_size=1.0,
     )
 
     # Adjust detection parameters
@@ -155,7 +160,7 @@ def create_user_image_simulator(image_path=None,
     scene.tracker.sift = cv2.SIFT_create(
         nfeatures=max_features,
         contrastThreshold=contrast_threshold,
-        edgeThreshold=edge_threshold
+        edgeThreshold=edge_threshold,
     )
 
     # Re-extract with new parameters
@@ -164,36 +169,27 @@ def create_user_image_simulator(image_path=None,
 
     # Create cameras based on displacement
     displacement_configs = {
-        'small': {
-            'initial_pos': [0.15, 0.10, -1.5],
-            'desired_pos': [0, 0, -1.8]
-        },
-        'medium': {
-            'initial_pos': [0.3, 0.25, -1.3],
-            'desired_pos': [0, 0, -1.8]
-        },
-        'large': {
-            'initial_pos': [0.5, 0.4, -1.2],
-            'desired_pos': [0, 0, -2.0]
-        }
+        "small": {"initial_pos": [0.15, 0.10, -1.5], "desired_pos": [0, 0, -1.8]},
+        "medium": {"initial_pos": [0.3, 0.25, -1.3], "desired_pos": [0, 0, -1.8]},
+        "large": {"initial_pos": [0.5, 0.4, -1.2], "desired_pos": [0, 0, -2.0]},
     }
 
-    config = displacement_configs.get(displacement, displacement_configs['medium'])
+    config = displacement_configs.get(displacement, displacement_configs["medium"])
 
     initial_camera = Camera(
         focal_length=800,
         image_width=640,
         image_height=480,
-        position=config['initial_pos'],
-        orientation=np.eye(3)
+        position=config["initial_pos"],
+        orientation=np.eye(3),
     )
 
     desired_camera = Camera(
         focal_length=800,
         image_width=640,
         image_height=480,
-        position=config['desired_pos'],
-        orientation=np.eye(3)
+        position=config["desired_pos"],
+        orientation=np.eye(3),
     )
 
     # Orient cameras to look at scene
@@ -203,28 +199,24 @@ def create_user_image_simulator(image_path=None,
 
     # Controller parameters
     controller_params = {
-        'gain': gain,
-        'control_law': 'classic',
-        'depth_estimation': 'desired',
-        'velocity_limits': {'linear': 0.5, 'angular': 0.5}
+        "gain": gain,
+        "control_law": "classic",
+        "depth_estimation": "desired",
+        "velocity_limits": {"linear": 0.5, "angular": 0.5},
     }
 
     simulation_params = {
-        'dt': 0.01,
-        'max_iterations': 1500,
-        'convergence_threshold': 1e-3,
-        'check_visibility': True,
-        'stop_if_features_lost': True
+        "dt": 0.01,
+        "max_iterations": 1500,
+        "convergence_threshold": 1e-3,
+        "check_visibility": True,
+        "stop_if_features_lost": True,
     }
 
     from sift import SIFTBasedVSSimulator
 
     sim = SIFTBasedVSSimulator(
-        scene,
-        initial_camera,
-        desired_camera,
-        controller_params,
-        simulation_params
+        scene, initial_camera, desired_camera, controller_params, simulation_params
     )
 
     return sim
@@ -241,7 +233,7 @@ def run_user_image_vs_interactive():
     print("=" * 70)
 
     # Get image path
-    print("\n📁 Image Selection")
+    print("\n Image Selection")
     print("-" * 70)
     print("Enter the path to your desired image:")
     print("(Supported formats: .jpg, .jpeg, .png, .bmp)")
@@ -253,6 +245,7 @@ def run_user_image_vs_interactive():
     if not image_path:
         print("\nNo image provided. Using sample checkerboard pattern...")
         from features import create_checkerboard_pattern
+
         image = create_checkerboard_pattern(64, 8)
         # Convert to RGB
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
@@ -263,7 +256,7 @@ def run_user_image_vs_interactive():
 
         image = load_user_image(image_path)
         if image is None:
-            print("\n❌ Failed to load image. Exiting.")
+            print("\n Failed to load image. Exiting.")
             return None
 
         image_name = Path(image_path).stem
@@ -271,15 +264,19 @@ def run_user_image_vs_interactive():
     # Preview with features
     print("\n👁️  Feature Preview")
     print("-" * 70)
-    preview_choice = input("Preview image with detected features? (y/n) [default: y]: ").strip().lower()
+    preview_choice = (
+        input("Preview image with detected features? (y/n) [default: y]: ")
+        .strip()
+        .lower()
+    )
 
-    if preview_choice != 'n':
+    if preview_choice != "n":
         n_preview_features = preview_image_with_features(image, max_features=30)
         if n_preview_features < 4:
             print("\n⚠️  Warning: Very few features detected!")
             print("   This image may not be suitable for visual servoing.")
             cont = input("   Continue anyway? (y/n): ").strip().lower()
-            if cont != 'y':
+            if cont != "y":
                 return None
 
     # Get parameters
@@ -302,8 +299,8 @@ def run_user_image_vs_interactive():
     print("   medium - Balanced (recommended)")
     print("   high   - Detect more features (may include weaker ones)")
     quality = input("   Quality (low/medium/high) [default: medium]: ").strip().lower()
-    if quality not in ['low', 'medium', 'high']:
-        quality = 'medium'
+    if quality not in ["low", "medium", "high"]:
+        quality = "medium"
 
     # Control gain
     print("\n3. Control gain (0.1-2.0)")
@@ -322,14 +319,18 @@ def run_user_image_vs_interactive():
     print("   small  - Small displacement, fast convergence")
     print("   medium - Moderate displacement (recommended)")
     print("   large  - Large displacement, tests robustness")
-    displacement = input("   Displacement (small/medium/large) [default: medium]: ").strip().lower()
-    if displacement not in ['small', 'medium', 'large']:
-        displacement = 'medium'
+    displacement = (
+        input("   Displacement (small/medium/large) [default: medium]: ")
+        .strip()
+        .lower()
+    )
+    if displacement not in ["small", "medium", "large"]:
+        displacement = "medium"
 
     # Visualization
     print("\n5. Visualization options")
     live_viz = input("   Show live visualization? (y/n) [default: y]: ").strip().lower()
-    show_live = live_viz != 'n'
+    show_live = live_viz != "n"
 
     # Summary
     print("\n" + "=" * 70)
@@ -344,7 +345,7 @@ def run_user_image_vs_interactive():
     print("=" * 70)
 
     confirm = input("\nProceed with simulation? (y/n) [default: y]: ").strip().lower()
-    if confirm == 'n':
+    if confirm == "n":
         print("Simulation cancelled.")
         return None
 
@@ -356,14 +357,14 @@ def run_user_image_vs_interactive():
             max_features=n_features,
             gain=gain,
             displacement=displacement,
-            feature_quality=quality
+            feature_quality=quality,
         )
     except Exception as e:
-        print(f"\n❌ Error creating simulator: {e}")
+        print(f"\n Error creating simulator: {e}")
         return None
 
     if len(sim.scene.points_3d) < 4:
-        print(f"\n❌ Error: Only {len(sim.scene.points_3d)} features detected!")
+        print(f"\n Error: Only {len(sim.scene.points_3d)} features detected!")
         print("   Need at least 4 features for 6-DOF control.")
         print("   Try:")
         print("   - Using an image with more texture/corners")
@@ -374,7 +375,7 @@ def run_user_image_vs_interactive():
     # Show detected features
     print("\n📊 Feature Detection Results")
     print("-" * 70)
-    sim.sift_scene.visualize_reference(save_path=f'{image_name}_features.png')
+    sim.sift_scene.visualize_reference(save_path=f"{image_name}_features.png")
 
     # Run simulation
     print("\n🚀 Running Visual Servoing Simulation")
@@ -384,7 +385,7 @@ def run_user_image_vs_interactive():
         if show_live:
             live_vis = LiveVisualizer(sim)
             results = live_vis.run_with_visualization(verbose=True)
-            live_vis.save_all(prefix=f'user_image_{image_name}')
+            live_vis.save_all(prefix=f"user_image_{image_name}")
         else:
             results = sim.run(verbose=True)
 
@@ -395,8 +396,8 @@ def run_user_image_vs_interactive():
             vis_3d = Visualizer3D(sim.scene, sim.initial_camera, sim.desired_camera)
             vis_3d.update_visualization(sim.current_camera)
 
-            plot_manager.save(f'user_image_{image_name}_plots.png')
-            vis_3d.save(f'user_image_{image_name}_3d.png')
+            plot_manager.save(f"user_image_{image_name}_plots.png")
+            vis_3d.save(f"user_image_{image_name}_3d.png")
 
             plt.show()
 
@@ -412,17 +413,16 @@ def run_user_image_vs_interactive():
         return results
 
     except Exception as e:
-        print(f"\n❌ Error during simulation: {e}")
+        print(f"\n Error during simulation: {e}")
         import traceback
+
         traceback.print_exc()
         return None
 
 
-def run_user_image_vs_batch(image_path,
-                            max_features=20,
-                            gain=0.5,
-                            displacement='medium',
-                            show_viz=True):
+def run_user_image_vs_batch(
+    image_path, max_features=20, gain=0.5, displacement="medium", show_viz=True
+):
     """
     Run visual servoing with user image (non-interactive).
 
@@ -447,7 +447,7 @@ def run_user_image_vs_batch(image_path,
         image_array=image,
         max_features=max_features,
         gain=gain,
-        displacement=displacement
+        displacement=displacement,
     )
 
     if len(sim.scene.points_3d) < 4:
@@ -458,7 +458,7 @@ def run_user_image_vs_batch(image_path,
 
     # Show features
     image_name = Path(image_path).stem
-    sim.sift_scene.visualize_reference(save_path=f'{image_name}_features.png')
+    sim.sift_scene.visualize_reference(save_path=f"{image_name}_features.png")
 
     # Run simulation
     print("\n🚀 Running simulation...")
@@ -466,7 +466,7 @@ def run_user_image_vs_batch(image_path,
     if show_viz:
         live_vis = LiveVisualizer(sim)
         results = live_vis.run_with_visualization(verbose=True)
-        live_vis.save_all(prefix=f'user_image_{image_name}')
+        live_vis.save_all(prefix=f"user_image_{image_name}")
     else:
         results = sim.run(verbose=True)
 

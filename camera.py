@@ -8,12 +8,14 @@ class Camera:
     Handles camera pose, projections, and velocity-based updates.
     """
 
-    def __init__(self,
-                 focal_length=800.0,
-                 image_width=640,
-                 image_height=480,
-                 position=None,
-                 orientation=None):
+    def __init__(
+        self,
+        focal_length=800.0,
+        image_width=640,
+        image_height=480,
+        position=None,
+        orientation=None,
+    ):
         """
         Initialize camera with intrinsic and extrinsic parameters.
 
@@ -34,15 +36,19 @@ class Camera:
         self.cy = image_height / 2.0
 
         # Camera intrinsic matrix K
-        self.K = np.array([
-            [focal_length, 0, self.cx],
-            [0, focal_length, self.cy],
-            [0, 0, 1]
-        ])
+        self.K = np.array(
+            [[focal_length, 0, self.cx], [0, focal_length, self.cy], [0, 0, 1]]
+        )
 
         # Extrinsic parameters (camera pose in world frame)
-        self.position = np.array([0, 0, 0], dtype=float) if position is None else np.array(position, dtype=float)
-        self.rotation = np.eye(3) if orientation is None else np.array(orientation, dtype=float)
+        self.position = (
+            np.array([0, 0, 0], dtype=float)
+            if position is None
+            else np.array(position, dtype=float)
+        )
+        self.rotation = (
+            np.eye(3) if orientation is None else np.array(orientation, dtype=float)
+        )
 
         # History for trajectory plotting
         self.position_history = [self.position.copy()]
@@ -127,7 +133,7 @@ class Camera:
 
         return points_world
 
-    def project_to_image(self, points_3d, frame='world'):
+    def project_to_image(self, points_3d, frame="world"):
         """
         Project 3D points to image plane.
 
@@ -144,7 +150,7 @@ class Camera:
         points_3d = np.atleast_2d(points_3d)
 
         # Transform to camera frame if needed
-        if frame == 'world':
+        if frame == "world":
             points_cam = self.world_to_camera_frame(points_3d)
         else:
             points_cam = points_3d.copy()
@@ -172,7 +178,7 @@ class Camera:
 
         return image_points, depths, valid_mask
 
-    def project_to_normalized_plane(self, points_3d, frame='world'):
+    def project_to_normalized_plane(self, points_3d, frame="world"):
         """
         Project 3D points to normalized image plane (metric coordinates).
 
@@ -189,7 +195,7 @@ class Camera:
         points_3d = np.atleast_2d(points_3d)
 
         # Transform to camera frame if needed
-        if frame == 'world':
+        if frame == "world":
             points_cam = self.world_to_camera_frame(points_3d)
         else:
             points_cam = points_3d.copy()
@@ -222,8 +228,10 @@ class Camera:
         u, v = image_points[:, 0], image_points[:, 1]
 
         in_fov = (
-                (u >= margin) & (u < self.image_width - margin) &
-                (v >= margin) & (v < self.image_height - margin)
+            (u >= margin)
+            & (u < self.image_width - margin)
+            & (v >= margin)
+            & (v < self.image_height - margin)
         )
 
         return in_fov
@@ -256,9 +264,11 @@ class Camera:
             omega_skew = self.skew_symmetric(omega_normalized)
 
             # Exponential map: exp(theta * [omega]_x)
-            delta_R = (np.eye(3) +
-                       np.sin(theta * dt) * omega_skew +
-                       (1 - np.cos(theta * dt)) * (omega_skew @ omega_skew))
+            delta_R = (
+                np.eye(3)
+                + np.sin(theta * dt) * omega_skew
+                + (1 - np.cos(theta * dt)) * (omega_skew @ omega_skew)
+            )
 
             # Update rotation: R_new = R_old * delta_R (rotation in camera frame)
             self.rotation = self.rotation @ delta_R
@@ -278,11 +288,7 @@ class Camera:
         Returns:
             3x3 skew-symmetric matrix
         """
-        return np.array([
-            [0, -v[2], v[1]],
-            [v[2], 0, -v[0]],
-            [-v[1], v[0], 0]
-        ])
+        return np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
 
     def get_optical_axis(self):
         """
@@ -345,11 +351,7 @@ class Camera:
                 return None
             return up_guess
 
-        candidate_ups = [
-            up_world,
-            np.array([0.0, 1.0, 0.0]),
-            np.array([1.0, 0.0, 0.0])
-        ]
+        candidate_ups = [up_world, np.array([0.0, 1.0, 0.0]), np.array([1.0, 0.0, 0.0])]
 
         valid_up = None
         for cand in candidate_ups:
@@ -383,7 +385,7 @@ class Camera:
             image_width=self.image_width,
             image_height=self.image_height,
             position=self.position.copy(),
-            orientation=self.rotation.copy()
+            orientation=self.rotation.copy(),
         )
         return cam
 
@@ -407,12 +409,14 @@ class Camera:
         half_height = (self.image_height / 2.0) * depth / self.focal_length
 
         # Four corners in camera frame
-        corners_cam = np.array([
-            [-half_width, -half_height, depth],
-            [half_width, -half_height, depth],
-            [half_width, half_height, depth],
-            [-half_width, half_height, depth]
-        ])
+        corners_cam = np.array(
+            [
+                [-half_width, -half_height, depth],
+                [half_width, -half_height, depth],
+                [half_width, half_height, depth],
+                [-half_width, half_height, depth],
+            ]
+        )
 
         # Transform to world frame
         corners_world = self.camera_to_world_frame(corners_cam)
@@ -423,35 +427,8 @@ class Camera:
         return frustum
 
     def __repr__(self):
-        return (f"Camera(position={self.position}, "
-                f"focal_length={self.focal_length}, "
-                f"resolution={self.image_width}x{self.image_height})")
-
-
-# Example usage and testing
-if __name__ == "__main__":
-    # Create a camera
-    cam = Camera(focal_length=800, image_width=640, image_height=480)
-
-    # Set initial pose
-    cam.set_pose(position=[0, 0, -2], rotation=np.eye(3))
-
-    # Create some 3D points
-    points_3d = np.array([
-        [0, 0, 0],
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-    ])
-
-    # Project to image
-    img_points, depths, valid = cam.project_to_image(points_3d, frame='world')
-    print("Image points:\n", img_points)
-    print("Depths:", depths)
-    print("Valid:", valid)
-
-    # Test velocity update
-    velocity = np.array([0.1, 0, 0, 0, 0, 0.1])  # Move right and rotate
-    cam.update_pose_with_velocity(velocity, dt=0.1)
-    print("\nNew position:", cam.position)
-    print("New rotation:\n", cam.rotation)
+        return (
+            f"Camera(position={self.position}, "
+            f"focal_length={self.focal_length}, "
+            f"resolution={self.image_width}x{self.image_height})"
+        )

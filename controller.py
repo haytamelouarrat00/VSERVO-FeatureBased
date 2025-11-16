@@ -8,11 +8,13 @@ class VSController:
     Computes camera velocity from feature errors.
     """
 
-    def __init__(self,
-                 gain=0.5,
-                 control_law='classic',
-                 depth_estimation='desired',
-                 velocity_limits=None):
+    def __init__(
+        self,
+        gain=0.5,
+        control_law="classic",
+        depth_estimation="desired",
+        velocity_limits=None,
+    ):
         """
         Initialize visual servoing controller.
 
@@ -28,10 +30,7 @@ class VSController:
 
         # Velocity limits for safety
         if velocity_limits is None:
-            self.velocity_limits = {
-                'linear': 0.5,  # m/s
-                'angular': 0.5  # rad/s
-            }
+            self.velocity_limits = {"linear": 0.5, "angular": 0.5}  # m/s  # rad/s
         else:
             self.velocity_limits = velocity_limits
 
@@ -159,19 +158,24 @@ class VSController:
         # Limit linear velocities
         linear_vel = velocity[:3]
         linear_norm = np.linalg.norm(linear_vel)
-        if linear_norm > self.velocity_limits['linear']:
-            velocity_limited[:3] = linear_vel * (self.velocity_limits['linear'] / linear_norm)
+        if linear_norm > self.velocity_limits["linear"]:
+            velocity_limited[:3] = linear_vel * (
+                self.velocity_limits["linear"] / linear_norm
+            )
 
         # Limit angular velocities
         angular_vel = velocity[3:]
         angular_norm = np.linalg.norm(angular_vel)
-        if angular_norm > self.velocity_limits['angular']:
-            velocity_limited[3:] = angular_vel * (self.velocity_limits['angular'] / angular_norm)
+        if angular_norm > self.velocity_limits["angular"]:
+            velocity_limited[3:] = angular_vel * (
+                self.velocity_limits["angular"] / angular_norm
+            )
 
         return velocity_limited
 
-    def compute_control(self, current_features, desired_features,
-                        current_depths, desired_depths):
+    def compute_control(
+        self, current_features, desired_features, current_depths, desired_depths
+    ):
         """
         Main control function - compute velocity command from features.
 
@@ -189,18 +193,22 @@ class VSController:
 
         # Compute interaction matrix with depth estimation
         L = self.L_computer.compute_with_depth_estimation(
-            current_features, current_depths,
-            desired_features, desired_depths,
-            depth_estimation=self.depth_estimation
+            current_features,
+            current_depths,
+            desired_features,
+            desired_depths,
+            depth_estimation=self.depth_estimation,
         )
 
         # Compute velocity based on control law
-        if self.control_law == 'classic':
+        if self.control_law == "classic":
             velocity = self.compute_velocity_classic(error, L)
-        elif self.control_law == 'adaptive':
-            error_norm_prev = self.error_norm_history[-1] if self.error_norm_history else None
+        elif self.control_law == "adaptive":
+            error_norm_prev = (
+                self.error_norm_history[-1] if self.error_norm_history else None
+            )
             velocity = self.compute_velocity_adaptive(error, L, error_norm_prev)
-        elif self.control_law == 'second_order':
+        elif self.control_law == "second_order":
             velocity = self.compute_velocity_second_order(error, L)
         else:
             raise ValueError(f"Unknown control law: {self.control_law}")
@@ -237,7 +245,7 @@ class VSController:
         """Get the most recent error norm."""
         if self.error_norm_history:
             return self.error_norm_history[-1]
-        return float('inf')
+        return float("inf")
 
     def reset_history(self):
         """Reset all history arrays."""
@@ -253,9 +261,9 @@ class VSController:
     def set_velocity_limits(self, linear=None, angular=None):
         """Update velocity limits."""
         if linear is not None:
-            self.velocity_limits['linear'] = linear
+            self.velocity_limits["linear"] = linear
         if angular is not None:
-            self.velocity_limits['angular'] = angular
+            self.velocity_limits["angular"] = angular
 
 
 class AdvancedVSController(VSController):
@@ -286,7 +294,9 @@ class AdvancedVSController(VSController):
         if cond > 100:
             self.singularity_detected = True
             # Use damped least squares
-            L_pinv = self.L_computer.compute_pseudoinverse(L, method='damped', damping=damping)
+            L_pinv = self.L_computer.compute_pseudoinverse(
+                L, method="damped", damping=damping
+            )
         else:
             self.singularity_detected = False
             L_pinv = self.L_computer.compute_pseudoinverse(L)
@@ -352,86 +362,3 @@ class AdvancedVSController(VSController):
         optimal_gain = min(self.gain, max_gain)
 
         return optimal_gain
-
-
-# Testing
-if __name__ == "__main__":
-    print("=== Testing VSController ===\n")
-
-    # Create controller
-    controller = VSController(gain=0.5, control_law='classic')
-
-    # Simulate some features
-    current_features = np.array([
-        [0.1, 0.1],
-        [-0.1, 0.1],
-        [-0.1, -0.1],
-        [0.1, -0.1]
-    ])
-
-    desired_features = np.array([
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 0.0]
-    ])
-
-    depths = np.array([2.0, 2.0, 2.0, 2.0])
-
-    # Compute control
-    print("1. Feature error:")
-    error = controller.compute_feature_error(current_features, desired_features)
-    print(f"Error: {error}")
-    print(f"Error norm: {np.linalg.norm(error):.4f}\n")
-
-    print("2. Velocity command:")
-    velocity = controller.compute_control(
-        current_features, desired_features, depths, depths
-    )
-    print(f"Velocity: {velocity}")
-    print(f"Linear velocity: {velocity[:3]}")
-    print(f"Angular velocity: {velocity[3:]}\n")
-
-    # Test convergence
-    print("3. Simulating convergence:")
-    controller.reset_history()
-
-    features = current_features.copy()
-    for i in range(50):
-        velocity = controller.compute_control(features, desired_features, depths, depths)
-
-        # Simulate feature update (simplified)
-        features = features - velocity[:2].reshape(1, 2) * 0.01
-
-        if i % 10 == 0:
-            error_norm = controller.get_current_error_norm()
-            print(f"Iteration {i}: Error norm = {error_norm:.6f}")
-
-        if controller.has_converged(threshold=1e-4):
-            print(f"\nConverged at iteration {i}")
-            break
-
-    print(f"\nFinal error norm: {controller.get_current_error_norm():.8f}")
-
-    # Test advanced controller
-    print("\n4. Testing Advanced Controller:")
-    adv_controller = AdvancedVSController(gain=0.5)
-
-    # Create singular configuration (all points aligned)
-    singular_features = np.array([
-        [0.1, 0.0],
-        [0.05, 0.0],
-        [-0.05, 0.0],
-        [-0.1, 0.0]
-    ])
-
-    L_computer = InteractionMatrix()
-    L = L_computer.compute_for_points(singular_features, depths)
-    cond = L_computer.compute_condition_number(L)
-    print(f"Condition number (singular config): {cond:.2f}")
-
-    velocity = adv_controller.compute_velocity_with_singularity_handling(
-        error, L, damping=0.01
-    )
-    print(f"Singularity detected: {adv_controller.singularity_detected}")
-    print(f"Velocity with damping: {velocity}")

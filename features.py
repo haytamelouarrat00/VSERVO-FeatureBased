@@ -17,12 +17,9 @@ class HarrisCornerDetector:
     Harris corner detector for extracting features from images.
     """
 
-    def __init__(self,
-                 k=0.04,
-                 threshold=0.01,
-                 window_size=3,
-                 sigma=1.0,
-                 min_distance=10):
+    def __init__(
+        self, k=0.04, threshold=0.01, window_size=3, sigma=1.0, min_distance=10
+    ):
         """
         Initialize Harris corner detector.
 
@@ -74,16 +71,16 @@ class HarrisCornerDetector:
         # Apply Gaussian smoothing to structure tensor
         window = self._gaussian_window(self.window_size, self.sigma)
 
-        Sxx = signal.convolve2d(Ixx, window, mode='same', boundary='symm')
-        Syy = signal.convolve2d(Iyy, window, mode='same', boundary='symm')
-        Sxy = signal.convolve2d(Ixy, window, mode='same', boundary='symm')
+        Sxx = signal.convolve2d(Ixx, window, mode="same", boundary="symm")
+        Syy = signal.convolve2d(Iyy, window, mode="same", boundary="symm")
+        Sxy = signal.convolve2d(Ixy, window, mode="same", boundary="symm")
 
         # Compute Harris corner response
         # R = det(M) - k * trace(M)^2
         # where M is the structure tensor
         det_M = Sxx * Syy - Sxy * Sxy
         trace_M = Sxx + Syy
-        R = det_M - self.k * (trace_M ** 2)
+        R = det_M - self.k * (trace_M**2)
 
         # Threshold
         threshold_val = self.threshold * R.max()
@@ -112,16 +109,12 @@ class HarrisCornerDetector:
             tuple: (Ix, Iy) gradient images
         """
         # Sobel kernels
-        sobel_x = np.array([[-1, 0, 1],
-                            [-2, 0, 2],
-                            [-1, 0, 1]]) / 8.0
+        sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]) / 8.0
 
-        sobel_y = np.array([[-1, -2, -1],
-                            [0, 0, 0],
-                            [1, 2, 1]]) / 8.0
+        sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]) / 8.0
 
-        Ix = signal.convolve2d(image, sobel_x, mode='same', boundary='symm')
-        Iy = signal.convolve2d(image, sobel_y, mode='same', boundary='symm')
+        Ix = signal.convolve2d(image, sobel_x, mode="same", boundary="symm")
+        Iy = signal.convolve2d(image, sobel_y, mode="same", boundary="symm")
 
         return Ix, Iy
 
@@ -139,7 +132,7 @@ class HarrisCornerDetector:
         ax = np.arange(-size // 2 + 1, size // 2 + 1)
         xx, yy = np.meshgrid(ax, ax)
 
-        kernel = np.exp(-(xx ** 2 + yy ** 2) / (2 * sigma ** 2))
+        kernel = np.exp(-(xx**2 + yy**2) / (2 * sigma**2))
         kernel = kernel / kernel.sum()
 
         return kernel
@@ -167,7 +160,7 @@ class HarrisCornerDetector:
 
         return corners
 
-    def visualize_corners(self, image, corners, title='Harris Corners'):
+    def visualize_corners(self, image, corners, title="Harris Corners"):
         """
         Visualize detected corners on image.
 
@@ -179,22 +172,29 @@ class HarrisCornerDetector:
         plt.figure(figsize=(10, 8))
 
         if len(image.shape) == 2:
-            plt.imshow(image, cmap='gray')
+            plt.imshow(image, cmap="gray")
         else:
             plt.imshow(image)
 
         if len(corners) > 0:
-            plt.scatter(corners[:, 0], corners[:, 1],
-                        c='red', marker='x', s=100, linewidths=2)
+            plt.scatter(
+                corners[:, 0], corners[:, 1], c="red", marker="x", s=100, linewidths=2
+            )
 
             # Number the corners
             for i, corner in enumerate(corners):
-                plt.text(corner[0] + 5, corner[1] + 5, str(i),
-                         color='yellow', fontsize=12, fontweight='bold',
-                         bbox=dict(boxstyle='round', facecolor='black', alpha=0.5))
+                plt.text(
+                    corner[0] + 5,
+                    corner[1] + 5,
+                    str(i),
+                    color="yellow",
+                    fontsize=12,
+                    fontweight="bold",
+                    bbox=dict(boxstyle="round", facecolor="black", alpha=0.5),
+                )
 
-        plt.title(title, fontsize=14, fontweight='bold')
-        plt.axis('off')
+        plt.title(title, fontsize=14, fontweight="bold")
+        plt.axis("off")
         plt.tight_layout()
 
 
@@ -204,12 +204,14 @@ class ImageFeatureScene:
     Uses Harris corners from a reference image to generate 3D points.
     """
 
-    def __init__(self,
-                 image_path=None,
-                 image_array=None,
-                 max_features=20,
-                 plane_depth=0.0,
-                 plane_size=1.0):
+    def __init__(
+        self,
+        image_path=None,
+        image_array=None,
+        max_features=20,
+        plane_depth=0.0,
+        plane_size=1.0,
+    ):
         """
         Initialize image feature scene.
 
@@ -234,16 +236,10 @@ class ImageFeatureScene:
         self.plane_size = plane_size
 
         # Detect corners
-        self.detector = HarrisCornerDetector(
-            k=0.04,
-            threshold=0.01,
-            min_distance=20
-        )
+        self.detector = HarrisCornerDetector(k=0.04, threshold=0.01, min_distance=20)
 
         self.image_corners = self.detector.detect_corners(
-            self.image,
-            max_corners=max_features,
-            min_distance=20
+            self.image, max_corners=max_features, min_distance=20
         )
 
         # Convert to 3D points
@@ -255,6 +251,7 @@ class ImageFeatureScene:
         """Load image from file."""
         try:
             import cv2
+
             image = cv2.imread(path)
             if image is None:
                 raise ValueError(f"Could not load image from {path}")
@@ -284,16 +281,16 @@ class ImageFeatureScene:
             (300, 100, 150, 150),
             (100, 300, 150, 150),
             (300, 300, 150, 150),
-            (200, 200, 100, 100)
+            (200, 200, 100, 100),
         ]
 
         for x, y, w, h in rectangles:
-            image[y:y + h, x:x + w] = 0
+            image[y : y + h, x : x + w] = 0
 
         # Add some circles
         for cx, cy, r in [(150, 400), (400, 400), (256, 450)]:
             yy, xx = np.ogrid[:size, :size]
-            mask = (xx - cx) ** 2 + (yy - cy) ** 2 <= r ** 2
+            mask = (xx - cx) ** 2 + (yy - cy) ** 2 <= r**2
             image[mask] = 128
 
         return image.astype(np.uint8)
@@ -317,8 +314,12 @@ class ImageFeatureScene:
         corners_normalized = self.image_corners.copy().astype(float)
 
         # Convert to centered coordinates
-        corners_normalized[:, 0] = (corners_normalized[:, 0] - w / 2) / w * self.plane_size
-        corners_normalized[:, 1] = -(corners_normalized[:, 1] - h / 2) / h * self.plane_size  # Flip Y
+        corners_normalized[:, 0] = (
+            (corners_normalized[:, 0] - w / 2) / w * self.plane_size
+        )
+        corners_normalized[:, 1] = (
+            -(corners_normalized[:, 1] - h / 2) / h * self.plane_size
+        )  # Flip Y
 
         # Create 3D points (all at same depth)
         points_3d = np.zeros((len(corners_normalized), 3))
@@ -331,12 +332,12 @@ class ImageFeatureScene:
     def get_scene_info(self):
         """Get information about the scene."""
         return {
-            'n_features': len(self.image_corners),
-            'image_shape': self.image.shape,
-            'image_corners': self.image_corners,
-            'points_3d': self.points_3d,
-            'plane_size': self.plane_size,
-            'plane_depth': self.plane_depth
+            "n_features": len(self.image_corners),
+            "image_shape": self.image.shape,
+            "image_corners": self.image_corners,
+            "points_3d": self.points_3d,
+            "plane_size": self.plane_size,
+            "plane_depth": self.plane_depth,
         }
 
     def visualize(self, save_path=None):
@@ -349,11 +350,11 @@ class ImageFeatureScene:
         self.detector.visualize_corners(
             self.image,
             self.image_corners,
-            title=f'Harris Corners Detected ({len(self.image_corners)} features)'
+            title=f"Harris Corners Detected ({len(self.image_corners)} features)",
         )
 
         if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            plt.savefig(save_path, dpi=150, bbox_inches="tight")
 
         plt.show()
 
@@ -366,7 +367,7 @@ class ImageFeatureScene:
         """
         from scene import VirtualScene
 
-        scene = VirtualScene(points_3d=self.points_3d, scene_type='custom')
+        scene = VirtualScene(points_3d=self.points_3d, scene_type="custom")
 
         return scene
 
@@ -429,6 +430,7 @@ def create_star_pattern(size=512):
 
     # Fill star
     from matplotlib.path import Path
+
     xx, yy = np.meshgrid(np.arange(size), np.arange(size))
     coords = np.c_[xx.ravel(), yy.ravel()]
     path = Path(points)
@@ -452,9 +454,7 @@ if __name__ == "__main__":
     print("\n2. Testing with checkerboard...")
     checkerboard = create_checkerboard_pattern(square_size=64, n_squares=8)
     scene_checker = ImageFeatureScene(
-        image_array=checkerboard,
-        max_features=20,
-        plane_size=1.0
+        image_array=checkerboard, max_features=20, plane_size=1.0
     )
     print(f"   Detected {len(scene_checker.image_corners)} corners")
     scene_checker.visualize()
@@ -462,11 +462,7 @@ if __name__ == "__main__":
     # Test 3: Star pattern
     print("\n3. Testing with star pattern...")
     star = create_star_pattern(size=512)
-    scene_star = ImageFeatureScene(
-        image_array=star,
-        max_features=10,
-        plane_size=0.8
-    )
+    scene_star = ImageFeatureScene(image_array=star, max_features=10, plane_size=0.8)
     print(f"   Detected {len(scene_star.image_corners)} corners")
     scene_star.visualize()
 
