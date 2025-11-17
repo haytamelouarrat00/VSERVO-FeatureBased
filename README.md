@@ -77,6 +77,7 @@ The simulator:
 - 👁️ Side-by-side current vs desired views
 - 📈 Feature tracking visualization
 - 🎯 Convergence monitoring
+- 🌐 Browser-based dashboard for simulation and error evolution (local-only)
 
 ---
 
@@ -133,23 +134,21 @@ This runs a basic visual servoing simulation with:
 python main.py
 ```
 
-Select from 14+ pre-configured examples:
+Select from the streamlined set:
 ```
-1. Basic simulation
-2. Large displacement
-3. Scene comparison
-4. Gain comparison
-5. Live visualization
-...
-11. 🆕 Your own image (interactive)
-12. 🆕 Your own image (batch)
-13. 🆕 Compare multiple images
+1. Live visualization
+2. Pure rotation
+3. 3D sphere scene
+4. Interactive parameters demo
+5. Harris corners (checkerboard)
+6. Your own image (interactive)
+7. Run all non-image examples
 ```
 
 ### 3. Use Your Own Image
 ```bash
 python main.py
-# Select option 11
+# Select option 6
 # Follow the interactive prompts
 ```
 
